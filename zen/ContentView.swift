@@ -235,53 +235,53 @@ struct TutorialContent {
     static let screens: [TutorialScreen] = [
         TutorialScreen(
             title: "Why AlphaFlow?",
-            content: "Welcome to AlphaFlow, your path to peak masculinity. Our unique combination of exercises is designed to enhance your physical and mental strength, giving you the edge in all areas of life.",
+            content: "Welcome to AlphaFlow, your science-backed path to peak masculinity. Our unique combination of exercises is designed to enhance your physical and mental strength, giving you the edge in all areas of life.",
             bulletPoints: [
                 "Improved sexual health and performance",
                 "Enhanced stress resilience and focus",
                 "Better overall physical and mental well-being"
             ],
-            proTip: "AlphaFlow integrates three powerful practices: Kegel exercises, box breathing, and meditation. Together, they form a comprehensive approach to male health that you won't find anywhere else."
+            proTip: "AlphaFlow integrates three powerful practices: Kegel exercises, box breathing, and meditation. Together, they form a comprehensive approach to male health that you won't find anywhere else. Ready to optimize your body and mind? Let's dive in."
         ),
         TutorialScreen(
             title: "Kegel Exercises",
-            content: "Kegel exercises strengthen your pelvic floor muscles – the unsung heroes of your love life. Here's why you should care and how to do them:",
+            content: "Kegel exercises strengthen your pelvic floor muscles – a crucial but often neglected part of male fitness and sexual health.",
             bulletPoints: [
-                "Boost your bedroom performance: Think of it as a gym workout for your manhood.",
-                "Enhance pleasure: For you and your partner. It's a win-win situation!",
-                "Improve control: Master the art of timing and last longer than you thought possible."
+                "Enhance Sexual Function: Improve blood flow for stronger erections and more intense orgasms.",
+                "Prevent Urinary Incontinence: Maintain urinary control, especially important as men age.",
+                "Support Core Stability: Contribute to better posture and reduced lower back pain."
             ],
-            proTip: "How to flex your love muscle:\n1. Find the right muscles (hint: they're the ones you use to stop peeing mid-stream).\n2. Squeeze those muscles for 5 seconds, then relax for 5 seconds.\n3. Repeat, but don't forget to breathe – passing out isn't sexy.\n\nPractice anywhere, anytime. It's your little secret superpower!"
+            proTip: "The Science: Kegels work by increasing the strength and endurance of the pubococcygeus (PC) muscle, which supports the pelvic organs and plays a crucial role in sexual function.\n\nHow to perform:\n1. Identify the right muscles by stopping urination midstream.\n2. Tighten these muscles for 5 seconds.\n3. Relax for 5 seconds.\n\nPro Tip: Practice Kegels discreetly anytime, anywhere. No one will know you're doing them!"
         ),
         TutorialScreen(
             title: "Box Breathing",
             content: "Box breathing is a powerful technique used by elite athletes and Navy SEALs to maintain calm and focus under pressure.",
             bulletPoints: [
-                "Instantly reduce stress and anxiety",
-                "Improve focus and decision-making",
-                "Enhance sleep quality"
+                "Activate the Parasympathetic Nervous System: Trigger your body's relaxation response, reducing cortisol levels.",
+                "Improve CO2 Tolerance: Enhance your body's ability to tolerate CO2, potentially improving athletic performance and reducing anxiety.",
+                "Enhance Heart Rate Variability: Increase heart rate variability, a key indicator of cardiovascular health and stress resilience."
             ],
-            proTip: "Use box breathing before important meetings, workouts, or whenever you need to perform at your best."
+            proTip: "The Science: Box breathing works by regulating the autonomic nervous system, balancing the ratio of oxygen to carbon dioxide in your bloodstream, which can reduce stress and improve focus.\n\nHow to perform:\n1. Inhale slowly for 4 seconds\n2. Hold your breath for 4 seconds\n3. Exhale slowly for 4 seconds\n4. Hold your breath for 4 seconds\n\nPro Tip: Use box breathing before important meetings, workouts, or whenever you need to perform at your best."
         ),
         TutorialScreen(
             title: "Meditation",
             content: "Meditation is mental training that sharpens your mind and builds emotional resilience. It's not just for monks – it's for warriors who want to conquer their inner battlefield.",
             bulletPoints: [
-                "Reduce stress and anxiety",
-                "Improve focus and productivity",
-                "Enhance self-awareness and emotional control"
+                "Neuroplasticity: Increase gray matter density in areas associated with learning, memory, and emotional regulation.",
+                "Telomere Preservation: Potentially slow cellular aging by preserving telomere length, extending lifespan.",
+                "Enhanced Emotional Intelligence: Improve self-awareness and empathy, crucial for leadership and relationships."
             ],
-            proTip: "Consistency is key. Even 5 minutes daily can make a significant impact."
+            proTip: "The Science: Meditation alters brain wave patterns, increasing alpha and theta waves associated with relaxation and deep focus. It also reduces activity in the brain's default mode network, responsible for mind-wandering.\n\nHow to begin:\n1. Find a quiet place and sit comfortably\n2. Close your eyes and focus on your breath\n3. When your mind wanders, gently bring attention back to your breath\n4. Start with 5 minutes and gradually increase\n\nPro Tip: Consistency is key. Even 5 minutes daily can make a significant impact on your brain structure and function."
         ),
         TutorialScreen(
             title: "You're Ready to Start!",
             content: "Congratulations, you're now equipped with the AlphaFlow toolkit for male excellence!",
             bulletPoints: [
-                "Kegel exercises for pelvic strength",
-                "Box breathing for stress control",
-                "Meditation for mental mastery"
+                "Kegel exercises for pelvic strength and sexual health",
+                "Box breathing for autonomic nervous system regulation",
+                "Meditation for cognitive enhancement and emotional mastery"
             ],
-            proTip: "Remember, true alphas commit to daily practice. Your journey to peak performance starts now."
+            proTip: "Remember, true alphas commit to daily practice. Your journey to peak performance starts now. Ready to optimize your body and mind? Start your first AlphaFlow session today!"
         )
     ]
 }
@@ -299,6 +299,89 @@ struct ContentView: View {
     
     enum Exercise: CaseIterable {
         case kegel, boxBreathing, meditation
+        
+        var title: String {
+            switch self {
+            case .kegel: return "Kegel Exercises"
+            case .boxBreathing: return "Box Breathing"
+            case .meditation: return "Meditation"
+            }
+        }
+        
+        var iconName: String {
+            switch self {
+            case .kegel: return "figure.strengthtraining.traditional"
+            case .boxBreathing: return "wind"
+            case .meditation: return "figure.mind.and.body"
+            }
+        }
+        
+        var description: String {
+            switch self {
+            case .kegel:
+                return "Kegel exercises strengthen your pelvic floor muscles – a crucial but often neglected part of male fitness and sexual health."
+            case .boxBreathing:
+                return "Box breathing is a powerful technique used by elite athletes and Navy SEALs to maintain calm and focus under pressure."
+            case .meditation:
+                return "Meditation is mental training that sharpens your mind and builds emotional resilience. It's not just for monks – it's for warriors who want to conquer their inner battlefield."
+            }
+        }
+        
+        var benefits: [String] {
+            switch self {
+            case .kegel:
+                return [
+                    "Enhance Sexual Function: Improve blood flow for stronger erections and more intense orgasms.",
+                    "Prevent Urinary Incontinence: Maintain urinary control, especially important as men age.",
+                    "Support Core Stability: Contribute to better posture and reduced lower back pain."
+                ]
+            case .boxBreathing:
+                return [
+                    "Activate the Parasympathetic Nervous System: Trigger your body's relaxation response, reducing cortisol levels.",
+                    "Improve CO2 Tolerance: Enhance your body's ability to tolerate CO2, potentially improving athletic performance and reducing anxiety.",
+                    "Enhance Heart Rate Variability: Increase heart rate variability, a key indicator of cardiovascular health and stress resilience."
+                ]
+            case .meditation:
+                return [
+                    "Neuroplasticity: Increase gray matter density in areas associated with learning, memory, and emotional regulation.",
+                    "Telomere Preservation: Potentially slow cellular aging by preserving telomere length, extending lifespan.",
+                    "Enhanced Emotional Intelligence: Improve self-awareness and empathy, crucial for leadership and relationships."
+                ]
+            }
+        }
+        
+        var howTo: String {
+            switch self {
+            case .kegel:
+                return "1. Identify the right muscles by stopping urination midstream.\n2. Tighten these muscles for 5 seconds.\n3. Relax for 5 seconds.\n4. Repeat for several rounds."
+            case .boxBreathing:
+                return "1. Inhale slowly for 4 seconds\n2. Hold your breath for 4 seconds\n3. Exhale slowly for 4 seconds\n4. Hold your breath for 4 seconds\n5. Repeat for several rounds."
+            case .meditation:
+                return "1. Find a quiet place and sit comfortably\n2. Close your eyes and focus on your breath\n3. When your mind wanders, gently bring attention back to your breath\n4. Start with 5 minutes and gradually increase"
+            }
+        }
+        
+        var scienceInfo: String? {
+            switch self {
+            case .kegel:
+                return "Kegels work by increasing the strength and endurance of the pubococcygeus (PC) muscle, which supports the pelvic organs and plays a crucial role in sexual function."
+            case .boxBreathing:
+                return "Box breathing works by regulating the autonomic nervous system, balancing the ratio of oxygen to carbon dioxide in your bloodstream, which can reduce stress and improve focus."
+            case .meditation:
+                return "Meditation alters brain wave patterns, increasing alpha and theta waves associated with relaxation and deep focus. It also reduces activity in the brain's default mode network, responsible for mind-wandering."
+            }
+        }
+        
+        var proTip: String? {
+            switch self {
+            case .kegel:
+                return "Practice Kegels discreetly anytime, anywhere. No one will know you're doing them!"
+            case .boxBreathing:
+                return "Use box breathing before important meetings, workouts, or whenever you need to perform at your best."
+            case .meditation:
+                return "Consistency is key. Even 5 minutes daily can make a significant impact on your brain structure and function."
+            }
+        }
     }
     
     enum Tab {
@@ -518,6 +601,18 @@ struct ContentView: View {
             Text(exercise.description)
                 .font(.body)
             
+            Text("Key Benefits:")
+                .font(.headline)
+                .padding(.top, 5)
+            
+            ForEach(exercise.benefits, id: \.self) { benefit in
+                HStack(alignment: .top) {
+                    Image(systemName: "checkmark.circle.fill")
+                        .foregroundColor(.green)
+                    Text(benefit)
+                }
+            }
+            
             Text("How to perform:")
                 .font(.headline)
                 .padding(.top, 5)
@@ -525,12 +620,24 @@ struct ContentView: View {
             Text(exercise.howTo)
                 .font(.body)
             
-            Text("Benefits:")
-                .font(.headline)
-                .padding(.top, 5)
+            if let scienceInfo = exercise.scienceInfo {
+                Text("The Science:")
+                    .font(.headline)
+                    .padding(.top, 5)
+                
+                Text(scienceInfo)
+                    .font(.body)
+            }
             
-            Text(exercise.benefits)
-                .font(.body)
+            if let proTip = exercise.proTip {
+                Text("Pro Tip:")
+                    .font(.headline)
+                    .padding(.top, 5)
+                
+                Text(proTip)
+                    .font(.body)
+                    .italic()
+            }
         }
         .padding()
         .background(Color.gray.opacity(0.1))
@@ -699,52 +806,24 @@ struct ContentView: View {
 
 // MARK: - Exercise Extensions
 extension ContentView.Exercise {
-    var title: String {
+    // Remove duplicate declarations of title, iconName, description, benefits, howTo, scienceInfo, and proTip
+    
+    // Add any additional properties or methods specific to the extension here
+    // For example:
+    
+    var emoji: String {
         switch self {
-        case .kegel: return "Kegel"
-        case .boxBreathing: return "Box Breathing"
-        case .meditation: return "Meditation"
+        case .kegel: return "💪"
+        case .boxBreathing: return "🧘‍♂️"
+        case .meditation: return "🧠"
         }
     }
     
-    var iconName: String {
+    var color: Color {
         switch self {
-        case .kegel: return "figure.strengthtraining.traditional"
-        case .boxBreathing: return "wind"
-        case .meditation: return "figure.mind.and.body"
-        }
-    }
-    
-    var description: String {
-        switch self {
-        case .kegel:
-            return "Kegel exercises strengthen the pelvic floor muscles, which support the bladder, bowel, and uterus."
-        case .boxBreathing:
-            return "Box breathing is a relaxation technique that helps to regulate the autonomic nervous system and improve focus."
-        case .meditation:
-            return "Meditation is a practice that involves focusing the mind to achieve a mentally clear and emotionally calm state."
-        }
-    }
-    
-    var howTo: String {
-        switch self {
-        case .kegel:
-            return "1. Identify the correct muscles by stopping urination midstream.\n2. Contract these muscles for 5 seconds.\n3. Relax for 5 seconds.\n4. Repeat for 10-15 rounds."
-        case .boxBreathing:
-            return "1. Inhale slowly for 4 seconds.\n2. Hold your breath for 4 seconds.\n3. Exhale slowly for 4 seconds.\n4. Hold your breath for 4 seconds.\n5. Repeat for several rounds."
-        case .meditation:
-            return "1. Find a comfortable seated position.\n2. Close your eyes and focus on your breath.\n3. When your mind wanders, gently bring your attention back to your breath.\n4. Start with 5-10 minutes and gradually increase duration."
-        }
-    }
-    
-    var benefits: String {
-        switch self {
-        case .kegel:
-            return "• Improved bladder control\n• Enhanced sexual function\n• Stronger core muscles\n• Reduced risk of pelvic organ prolapse"
-        case .boxBreathing:
-            return "• Reduced stress and anxiety\n• Improved focus and concentration\n• Better emotional regulation\n• Enhanced cardiovascular health"
-        case .meditation:
-            return "• Reduced stress and anxiety\n• Improved emotional well-being\n• Enhanced self-awareness\n• Better sleep quality\n• Increased attention span"
+        case .kegel: return .blue
+        case .boxBreathing: return .green
+        case .meditation: return .purple
         }
     }
 }
@@ -911,10 +990,13 @@ struct KegelView: View {
     @State private var completedRounds: Int = 0
     
     let kegelTips = [
-        "Focus on contracting the muscles you use to stop urination.",
-        "Keep your abdominal, buttock, and thigh muscles relaxed.",
-        "Breathe normally during the exercises.",
-        "Regular practice can improve bladder control and sexual performance."
+        "To identify the correct muscles, try to stop the flow of urine when you're urinating. The muscles you use are your pelvic floor muscles.",
+        "Focus on isolating the pelvic floor muscles. Avoid tensing your abs, buttocks, or thighs.",
+        "Breathe normally throughout the exercise. Don't hold your breath.",
+        "For best results, do Kegels in various positions: sitting, standing, and lying down.",
+        "Gradually increase the duration and number of contractions as your muscles get stronger.",
+        "Consistency is key. Aim to do Kegel exercises at least 3 times a day.",
+        "Remember, stronger pelvic floor muscles can lead to improved sexual performance and bladder control."
     ]
     
     var body: some View {
@@ -1098,7 +1180,7 @@ struct BoxBreathingView: View {
             viewModel.updateSettings(settings)
             viewModel.startExercise()
         }
-        .onChange(of: viewModel.isComplete) { isComplete in
+        .onChange(of: viewModel.isComplete) { _, isComplete in
             if isComplete {
                 onComplete()
             }

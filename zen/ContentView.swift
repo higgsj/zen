@@ -130,7 +130,7 @@ class SettingsManager: ObservableObject {
         self.hold1Duration = UserDefaults.standard.integer(forKey: "hold1Duration") != 0 ? UserDefaults.standard.integer(forKey: "hold1Duration") : 4
         self.exhaleDuration = UserDefaults.standard.integer(forKey: "exhaleDuration") != 0 ? UserDefaults.standard.integer(forKey: "exhaleDuration") : 4
         self.hold2Duration = UserDefaults.standard.integer(forKey: "hold2Duration") != 0 ? UserDefaults.standard.integer(forKey: "hold2Duration") : 4
-        self.boxBreathingRounds = UserDefaults.standard.integer(forKey: "boxBreathingRounds") != 0 ? UserDefaults.standard.integer(forKey: "boxBreathingRounds") : 15
+        self.boxBreathingRounds = UserDefaults.standard.integer(forKey: "boxBreathingRounds") != 0 ? UserDefaults.standard.integer(forKey: "boxBreathingRounds") : 7
         
         self.meditationDuration = UserDefaults.standard.integer(forKey: "meditationDuration") != 0 ? UserDefaults.standard.integer(forKey: "meditationDuration") : 600
         
@@ -910,6 +910,13 @@ struct KegelView: View {
     
     @State private var completedRounds: Int = 0
     
+    let kegelTips = [
+        "Focus on contracting the muscles you use to stop urination.",
+        "Keep your abdominal, buttock, and thigh muscles relaxed.",
+        "Breathe normally during the exercises.",
+        "Regular practice can improve bladder control and sexual performance."
+    ]
+    
     var body: some View {
         VStack(spacing: 40) {
             ZStack {
@@ -940,6 +947,11 @@ struct KegelView: View {
             Text("Rounds Remaining: \(roundsRemaining)")
                 .font(.title2)
                 .foregroundColor(.secondary)
+            
+            TipView(tips: kegelTips)
+                .padding(.horizontal)
+            
+            Spacer()
         }
         .padding()
         .background(Color.white) // Set the background to white
@@ -1026,6 +1038,13 @@ struct BoxBreathingView: View {
     
     @StateObject private var viewModel: BoxBreathingViewModel
     
+    let boxBreathingTips = [
+        "Sit in a comfortable position with your back straight.",
+        "Focus on the rhythm of your breath.",
+        "Try to clear your mind and concentrate only on your breathing.",
+        "This technique can help reduce stress and improve focus."
+    ]
+    
     init(onComplete: @escaping () -> Void, progressPercentage: Binding<Double>) {
         self.onComplete = onComplete
         self._progressPercentage = progressPercentage
@@ -1067,6 +1086,9 @@ struct BoxBreathingView: View {
             Text("Round \(viewModel.currentRound) of \(settings.boxBreathingRounds)")
                 .font(.title2)
                 .foregroundColor(.secondary)
+            
+            TipView(tips: boxBreathingTips)
+                .padding(.horizontal)
             
             Spacer()
         }
@@ -1505,6 +1527,13 @@ struct MeditationView: View {
     @State private var currentTime: Int = 0
     @State private var audioPlayer: AVAudioPlayer?
     
+    let meditationTips = [
+        "Find a quiet, comfortable place to sit.",
+        "Close your eyes and focus on your breath.",
+        "If your mind wanders, gently bring your attention back to your breath.",
+        "Regular meditation can improve mental clarity and reduce stress."
+    ]
+    
     var body: some View {
         VStack(spacing: 40) {
             Spacer()
@@ -1534,6 +1563,9 @@ struct MeditationView: View {
             Text("Focus on your breath")
                 .font(.title2)
                 .foregroundColor(.secondary)
+            
+            TipView(tips: meditationTips)
+                .padding(.horizontal)
             
             Spacer()
         }
@@ -1755,6 +1787,52 @@ struct TutorialScreenView: View {
                 Spacer()
             }
             .padding()
+        }
+    }
+}
+
+struct TipView: View {
+    let tips: [String]
+    @State private var currentTipIndex = 0
+    @State private var opacity = 1.0
+    
+    var body: some View {
+        VStack(alignment: .leading) {
+            HStack {
+                Image(systemName: "lightbulb.fill")
+                    .foregroundColor(.yellow)
+                Text("Tip:")
+                    .fontWeight(.semibold)
+            }
+            .padding(.bottom, 4)
+            
+            Text(tips[currentTipIndex])
+                .font(.subheadline)
+                .opacity(opacity)
+                .fixedSize(horizontal: false, vertical: true)
+                .frame(height: 60, alignment: .top)
+        }
+        .padding()
+        .frame(maxWidth: .infinity)
+        .background(Color.blue.opacity(0.1))
+        .cornerRadius(10)
+        .onAppear(perform: startRotatingTips)
+    }
+    
+    private func startRotatingTips() {
+        guard tips.count > 1 else { return }
+        
+        Timer.scheduledTimer(withTimeInterval: 8, repeats: true) { _ in
+            withAnimation(.easeInOut(duration: 0.5)) {
+                opacity = 0
+            }
+            
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                currentTipIndex = (currentTipIndex + 1) % tips.count
+                withAnimation(.easeInOut(duration: 0.5)) {
+                    opacity = 1
+                }
+            }
         }
     }
 }

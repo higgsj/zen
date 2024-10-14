@@ -1,0 +1,88 @@
+
+The app is a wellness and mindfulness application called AlphaFlow (there are internal project names like kintric or zen that you might see references to but those are temporary before we launch). The app focuses on three main exercises: Kegel exercises, Box Breathing, and Meditation. From a user perspective, the app provides a guided, customizable daily routine for pelvic floor exercises, breathing techniques, and meditation. It offers visual aids during exercises, tracks progress over time, and allows users to tailor the experience to their needs through the settings. The app aims to help users improve their physical and mental well-being by encouraging regular practice of these exercises.
+
+Here's an overview of the app's structure and functionality:
+
+1. Main Structure:
+The app has four main tabs: Home, Exercises, Progress, and Settings.
+
+2. Home Tab:
+- Users are greeted with a welcome message.
+- There's a prominent "Start Today's Session" button to begin the daily routine.
+- A motivational card is displayed to encourage users.
+
+3. Exercises Tab:
+- This tab provides an overview of the three main exercises.
+- Each exercise (Kegel, Box Breathing, and Meditation) has its own information card explaining its benefits and how to perform it.
+
+4. Progress Tab:
+- Users can view their progress over time.
+- It displays a chart showing daily exercise durations for the past week.
+- Detailed breakdowns of each exercise's duration and percentage of the total are provided.
+
+5. Settings Tab:
+- Users can customize various aspects of the app, including:
+  - Kegel exercise settings (contract duration, relax duration, number of rounds)
+  - Box Breathing settings (inhale, hold, exhale durations, number of rounds)
+  - Meditation duration
+- Other settings like dark mode and sound preferences are also available.
+
+6. Exercise Flow:
+When a user starts a session, they go through each exercise in sequence. Phases and number of rounds are set by the user in the settings page and each exercise timer should be handled independently of the other exercises:
+
+a) Kegel Exercise:
+- A circular progress indicator shows the current phase (contract or relax).
+- Users follow the on-screen instructions to contract and relax their pelvic floor muscles.
+- The app counts down the remaining rounds.
+
+b) Box Breathing:
+- A square-shaped progress indicator guides users through the four phases: inhale, hold, exhale, and hold again.
+- The app displays the current phase and countdown for each breath.
+
+c) Meditation:
+- A circular progress indicator shows the remaining meditation time.
+- Users can end the session early if needed.
+
+7. Session Summary:
+After completing all exercises, users see a summary of their session, including the time spent on each exercise.
+
+8. Progress Tracking:
+The app automatically records the duration of each completed exercise, which is then reflected in the Progress tab.
+
+
+
+User-Centric Design:
+The app is designed to look and feel as if designed by a senior google designer with the user's wellness journey in mind. Every feature should contribute to a seamless, encouraging, and supportive experience. The interface should be intuitive and calming, promoting a sense of peace and focus.
+
+Customization and Flexibility:
+While the app provides a structured routine, it's important to maintain flexibility. The settings allow users to tailor the experience to their needs and comfort levels. Any new features should consider how they can be personalized.
+
+Positive Reinforcement:
+The app uses gentle guidance and positive reinforcement throughout. The language used in instructions and feedback should be encouraging and supportive, never critical.
+
+Privacy and Sensitivity:
+Given the personal nature of some exercises (particularly Kegel exercises), it's crucial to maintain a tone of professionalism and respect. Privacy considerations should be at the forefront of any data handling or new feature development.
+
+Accessibility:
+The app should be usable by people with various abilities. Consider color contrast, text size, and alternative input methods where applicable.
+
+Consistency Across Exercises:
+While each exercise (Kegel, Box Breathing, Meditation) has its unique characteristics, try to maintain a consistent look and feel across all three. This helps users feel comfortable as they progress through their daily routine.
+
+Progress Motivation:
+The progress tracking feature is designed to motivate users by showing their consistency and improvement over time. Any enhancements to this feature should focus on encouraging regular use without creating undue pressure.
+
+Mindfulness Integration:
+Even though only one exercise is explicitly labeled as "Meditation," the entire app experience should promote mindfulness. Consider how each interaction can contribute to the user's overall sense of presence and calm.
+
+Sound Design:
+If implementing sound features, ensure they are calming and non-intrusive. Users should have easy control over sound settings.
+
+Performance and Reliability:
+Given that users may rely on this app as part of their daily routine, it's crucial that it performs reliably and efficiently. Pay attention to timer accuracy and smooth transitions between screens.
+
+Extensibility:
+While the app currently focuses on three main exercises, design with the potential for future expansion in mind. The architecture should allow for easy addition of new exercise types or features.
+
+User Education:
+The app not only guides users through exercises but also educates them about the benefits. Any new content or features should consider both the practical and educational aspects.

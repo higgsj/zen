@@ -14,7 +14,6 @@
 		9096963B2C992A3000B4B435 /* zenTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9096963A2C992A3000B4B435 /* zenTests.swift */; };
 		909696452C992A3000B4B435 /* zenUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 909696442C992A3000B4B435 /* zenUITests.swift */; };
 		909696472C992A3000B4B435 /* zenUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 909696462C992A3000B4B435 /* zenUITestsLaunchTests.swift */; };
-		909696542C9B0ED800B4B435 /* appinfo.txt in Resources */ = {isa = PBXBuildFile; fileRef = 909696532C9B0ED700B4B435 /* appinfo.txt */; };
 		90E70A172CBC7A52008D6232 /* meditation3 2.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 90E70A112CBC7A52008D6232 /* meditation3 2.mp3 */; };
 		90E70A192CBC7A52008D6232 /* pop.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 90E70A142CBC7A52008D6232 /* pop.mp3 */; };
 		90E70A1A2CBC7A52008D6232 /* pink-noise-from-the-surface-of-the-river-195101.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 90E70A122CBC7A52008D6232 /* pink-noise-from-the-surface-of-the-river-195101.mp3 */; };
@@ -23,6 +22,11 @@
 		90E70A1D2CBC7A52008D6232 /* singing-bowl-deep-sound-27532.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 90E70A152CBC7A52008D6232 /* singing-bowl-deep-sound-27532.mp3 */; };
 		90E70A1E2CBC7A52008D6232 /* meditation2 2.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 90E70A102CBC7A52008D6232 /* meditation2 2.mp3 */; };
 		90E70A1F2CBC7A52008D6232 /* light-rain-outside-a-greenhouse-194012.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 90E70A0E2CBC7A52008D6232 /* light-rain-outside-a-greenhouse-194012.mp3 */; };
+		90E70A242CBC7D8F008D6232 /* meditation2 3.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 90E70A212CBC7D8F008D6232 /* meditation2 3.mp3 */; };
+		90E70A252CBC7D8F008D6232 /* singing-bowl-deep-sound-27532 3.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 90E70A232CBC7D8F008D6232 /* singing-bowl-deep-sound-27532 3.mp3 */; };
+		90E70A262CBC7D8F008D6232 /* meditation3 3.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 90E70A222CBC7D8F008D6232 /* meditation3 3.mp3 */; };
+		90E70A272CBC7D8F008D6232 /* meditation1 3.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 90E70A202CBC7D8F008D6232 /* meditation1 3.mp3 */; };
+		90E70A292CBC7F09008D6232 /* appinfo.txt in Resources */ = {isa = PBXBuildFile; fileRef = 90E70A282CBC7F09008D6232 /* appinfo.txt */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -53,7 +57,6 @@
 		909696402C992A3000B4B435 /* zenUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = zenUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		909696442C992A3000B4B435 /* zenUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = zenUITests.swift; sourceTree = "<group>"; };
 		909696462C992A3000B4B435 /* zenUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = zenUITestsLaunchTests.swift; sourceTree = "<group>"; };
-		909696532C9B0ED700B4B435 /* appinfo.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = appinfo.txt; path = "../../../../Library/Mobile Documents/com~apple~TextEdit/Documents/appinfo.txt"; sourceTree = "<group>"; };
 		90E70A0E2CBC7A52008D6232 /* light-rain-outside-a-greenhouse-194012.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = "light-rain-outside-a-greenhouse-194012.mp3"; sourceTree = "<group>"; };
 		90E70A0F2CBC7A52008D6232 /* meditation1 2.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = "meditation1 2.mp3"; sourceTree = "<group>"; };
 		90E70A102CBC7A52008D6232 /* meditation2 2.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = "meditation2 2.mp3"; sourceTree = "<group>"; };
@@ -62,6 +65,11 @@
 		90E70A132CBC7A52008D6232 /* pink-noise-ocean-waves-on-grainy-sand-195103.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = "pink-noise-ocean-waves-on-grainy-sand-195103.mp3"; sourceTree = "<group>"; };
 		90E70A142CBC7A52008D6232 /* pop.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = pop.mp3; sourceTree = "<group>"; };
 		90E70A152CBC7A52008D6232 /* singing-bowl-deep-sound-27532.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = "singing-bowl-deep-sound-27532.mp3"; sourceTree = "<group>"; };
+		90E70A202CBC7D8F008D6232 /* meditation1 3.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = "meditation1 3.mp3"; sourceTree = "<group>"; };
+		90E70A212CBC7D8F008D6232 /* meditation2 3.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = "meditation2 3.mp3"; sourceTree = "<group>"; };
+		90E70A222CBC7D8F008D6232 /* meditation3 3.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = "meditation3 3.mp3"; sourceTree = "<group>"; };
+		90E70A232CBC7D8F008D6232 /* singing-bowl-deep-sound-27532 3.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = "singing-bowl-deep-sound-27532 3.mp3"; sourceTree = "<group>"; };
+		90E70A282CBC7F09008D6232 /* appinfo.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = appinfo.txt; sourceTree = "<group>"; };
 		90F7810C2C9B4ECC00C7148F /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -93,6 +101,7 @@
 		9096961D2C992A2D00B4B435 = {
 			isa = PBXGroup;
 			children = (
+				90E70A282CBC7F09008D6232 /* appinfo.txt */,
 				909696282C992A2D00B4B435 /* zen */,
 				909696392C992A3000B4B435 /* zenTests */,
 				909696432C992A3000B4B435 /* zenUITests */,
@@ -118,7 +127,6 @@
 				909696292C992A2D00B4B435 /* zenApp.swift */,
 				9096962B2C992A2D00B4B435 /* ContentView.swift */,
 				9096962D2C992A2F00B4B435 /* Assets.xcassets */,
-				909696532C9B0ED700B4B435 /* appinfo.txt */,
 				9096962F2C992A2F00B4B435 /* Preview Content */,
 			);
 			path = zen;
@@ -152,6 +160,10 @@
 		90F7810D2C9B637600C7148F /* Sound */ = {
 			isa = PBXGroup;
 			children = (
+				90E70A202CBC7D8F008D6232 /* meditation1 3.mp3 */,
+				90E70A212CBC7D8F008D6232 /* meditation2 3.mp3 */,
+				90E70A222CBC7D8F008D6232 /* meditation3 3.mp3 */,
+				90E70A232CBC7D8F008D6232 /* singing-bowl-deep-sound-27532 3.mp3 */,
 				90E70A0E2CBC7A52008D6232 /* light-rain-outside-a-greenhouse-194012.mp3 */,
 				90E70A0F2CBC7A52008D6232 /* meditation1 2.mp3 */,
 				90E70A102CBC7A52008D6232 /* meditation2 2.mp3 */,
@@ -274,13 +286,17 @@
 				909696312C992A2F00B4B435 /* Preview Assets.xcassets in Resources */,
 				90E70A172CBC7A52008D6232 /* meditation3 2.mp3 in Resources */,
 				90E70A192CBC7A52008D6232 /* pop.mp3 in Resources */,
+				90E70A242CBC7D8F008D6232 /* meditation2 3.mp3 in Resources */,
+				90E70A252CBC7D8F008D6232 /* singing-bowl-deep-sound-27532 3.mp3 in Resources */,
+				90E70A262CBC7D8F008D6232 /* meditation3 3.mp3 in Resources */,
+				90E70A292CBC7F09008D6232 /* appinfo.txt in Resources */,
+				90E70A272CBC7D8F008D6232 /* meditation1 3.mp3 in Resources */,
 				90E70A1A2CBC7A52008D6232 /* pink-noise-from-the-surface-of-the-river-195101.mp3 in Resources */,
 				90E70A1B2CBC7A52008D6232 /* pink-noise-ocean-waves-on-grainy-sand-195103.mp3 in Resources */,
 				90E70A1C2CBC7A52008D6232 /* meditation1 2.mp3 in Resources */,
 				90E70A1D2CBC7A52008D6232 /* singing-bowl-deep-sound-27532.mp3 in Resources */,
 				90E70A1E2CBC7A52008D6232 /* meditation2 2.mp3 in Resources */,
 				90E70A1F2CBC7A52008D6232 /* light-rain-outside-a-greenhouse-194012.mp3 in Resources */,
-				909696542C9B0ED800B4B435 /* appinfo.txt in Resources */,
 				9096962E2C992A2F00B4B435 /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

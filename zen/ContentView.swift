@@ -223,6 +223,69 @@ class ProgressManager: ObservableObject {
     }
 }
 
+// Add these structs at the top of the file, after the import statements
+struct TutorialScreen {
+    let title: String
+    let content: String
+    let bulletPoints: [String]
+    let proTip: String?
+}
+
+struct TutorialContent {
+    static let screens: [TutorialScreen] = [
+        TutorialScreen(
+            title: "Why AlphaFlow?",
+            content: "Welcome to AlphaFlow, your path to peak masculinity. Our unique combination of exercises is designed to enhance your physical and mental strength, giving you the edge in all areas of life.",
+            bulletPoints: [
+                "Improved sexual health and performance",
+                "Enhanced stress resilience and focus",
+                "Better overall physical and mental well-being"
+            ],
+            proTip: "AlphaFlow integrates three powerful practices: Kegel exercises, box breathing, and meditation. Together, they form a comprehensive approach to male health that you won't find anywhere else."
+        ),
+        TutorialScreen(
+            title: "Kegel Exercises",
+            content: "Kegel exercises strengthen your pelvic floor muscles – the unsung heroes of your love life. Here's why you should care and how to do them:",
+            bulletPoints: [
+                "Boost your bedroom performance: Think of it as a gym workout for your manhood.",
+                "Enhance pleasure: For you and your partner. It's a win-win situation!",
+                "Improve control: Master the art of timing and last longer than you thought possible."
+            ],
+            proTip: "How to flex your love muscle:\n1. Find the right muscles (hint: they're the ones you use to stop peeing mid-stream).\n2. Squeeze those muscles for 5 seconds, then relax for 5 seconds.\n3. Repeat, but don't forget to breathe – passing out isn't sexy.\n\nPractice anywhere, anytime. It's your little secret superpower!"
+        ),
+        TutorialScreen(
+            title: "Box Breathing",
+            content: "Box breathing is a powerful technique used by elite athletes and Navy SEALs to maintain calm and focus under pressure.",
+            bulletPoints: [
+                "Instantly reduce stress and anxiety",
+                "Improve focus and decision-making",
+                "Enhance sleep quality"
+            ],
+            proTip: "Use box breathing before important meetings, workouts, or whenever you need to perform at your best."
+        ),
+        TutorialScreen(
+            title: "Meditation",
+            content: "Meditation is mental training that sharpens your mind and builds emotional resilience. It's not just for monks – it's for warriors who want to conquer their inner battlefield.",
+            bulletPoints: [
+                "Reduce stress and anxiety",
+                "Improve focus and productivity",
+                "Enhance self-awareness and emotional control"
+            ],
+            proTip: "Consistency is key. Even 5 minutes daily can make a significant impact."
+        ),
+        TutorialScreen(
+            title: "You're Ready to Start!",
+            content: "Congratulations, you're now equipped with the AlphaFlow toolkit for male excellence!",
+            bulletPoints: [
+                "Kegel exercises for pelvic strength",
+                "Box breathing for stress control",
+                "Meditation for mental mastery"
+            ],
+            proTip: "Remember, true alphas commit to daily practice. Your journey to peak performance starts now."
+        )
+    ]
+}
+
 struct ContentView: View {
     @State private var currentExercise: Exercise?
     @State private var isExerciseActive = false
@@ -231,6 +294,8 @@ struct ContentView: View {
     // Initialize SettingsManager
     @StateObject private var settings = SettingsManager()
     @StateObject private var progressManager = ProgressManager()
+    
+    @State private var showTutorial = false // Keep this line
     
     enum Exercise: CaseIterable {
         case kegel, boxBreathing, meditation
@@ -245,29 +310,36 @@ struct ContentView: View {
     
     var body: some View {
         NavigationStack {
-            VStack {
-                // Main Content based on Selected Tab
-                switch selectedTab {
-                case .home:
-                    homeView
-                case .exercises:
-                    exercisesView
-                case .progress:
-                    progressView
-                case .settings:
-                    settingsView
-                }
-                
-                // Bottom Navigation Bar
-                bottomNavigationBar
-            }
-            .navigationDestination(isPresented: $isExerciseActive) {
-                ExerciseView(initialExercise: currentExercise ?? .kegel, isPresented: $isExerciseActive, progressManager: progressManager)
-            }
-            .navigationBarHidden(true)
+            mainContent
         }
         .environmentObject(settings)
         .environmentObject(progressManager)
+        .sheet(isPresented: $showTutorial) {
+            TutorialView(showTutorial: $showTutorial)
+        }
+    }
+    
+    private var mainContent: some View {
+        VStack {
+            // Main Content based on Selected Tab
+            switch selectedTab {
+            case .home:
+                homeView
+            case .exercises:
+                exercisesView
+            case .progress:
+                progressView
+            case .settings:
+                settingsView
+            }
+            
+            // Bottom Navigation Bar
+            bottomNavigationBar
+        }
+        .navigationDestination(isPresented: $isExerciseActive) {
+            ExerciseView(initialExercise: currentExercise ?? .kegel, isPresented: $isExerciseActive, progressManager: progressManager)
+        }
+        .navigationBarHidden(true)
     }
     
     // MARK: - Home View
@@ -333,6 +405,20 @@ struct ContentView: View {
                 .padding()
                 .background(Color.green.opacity(0.1))
                 .cornerRadius(15)
+                
+                // View Tutorial Button
+                Button(action: {
+                    showTutorial = true
+                }) {
+                    Text("View Tutorial")
+                        .font(.headline)
+                        .foregroundColor(.white)
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(Color.blue)
+                        .cornerRadius(10)
+                }
+                .padding(.horizontal)
                 
                 // Daily Motivation
                 VStack(alignment: .leading, spacing: 10) {
@@ -527,6 +613,12 @@ struct ContentView: View {
                     Text("Earth").tag("meditation1")
                     Text("Sky").tag("meditation2")
                     Text("Ocean").tag("meditation3")
+                }
+            }
+            
+            Section(header: Text("Tutorial")) {
+                Button("View Tutorial") {
+                    showTutorial = true
                 }
             }
         }
@@ -1569,5 +1661,100 @@ struct ProgressChartView: View {
                 Text("Chart Placeholder")
                     .foregroundColor(.gray)
             )
+    }
+}
+
+// Add this struct after the MonthProgressView
+
+struct TutorialView: View {
+    @Environment(\.dismiss) private var dismiss
+    @Binding var showTutorial: Bool
+    @State private var currentScreenIndex = 0
+    
+    var body: some View {
+        VStack {
+            TabView(selection: $currentScreenIndex) {
+                ForEach(0..<TutorialContent.screens.count, id: \.self) { index in
+                    TutorialScreenView(screen: TutorialContent.screens[index])
+                        .tag(index)
+                }
+            }
+            .tabViewStyle(PageTabViewStyle(indexDisplayMode: .always))
+            
+            HStack {
+                if currentScreenIndex < TutorialContent.screens.count - 1 {
+                    Button("Skip") {
+                        endTutorial()
+                    }
+                    Spacer()
+                    Button("Next") {
+                        withAnimation {
+                            currentScreenIndex += 1
+                        }
+                    }
+                } else {
+                    Button("Close") {
+                        endTutorial()
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding()
+                    .background(Color.blue)
+                    .foregroundColor(.white)
+                    .cornerRadius(10)
+                }
+            }
+            .padding()
+        }
+    }
+    
+    private func endTutorial() {
+        showTutorial = false
+        dismiss()
+    }
+}
+
+struct TutorialScreenView: View {
+    let screen: TutorialScreen
+    
+    var body: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 20) {
+                Text(screen.title)
+                    .font(.largeTitle)
+                    .fontWeight(.bold)
+                
+                Text(screen.content)
+                    .font(.body)
+                
+                if !screen.bulletPoints.isEmpty {
+                    VStack(alignment: .leading, spacing: 10) {
+                        ForEach(screen.bulletPoints, id: \.self) { point in
+                            HStack(alignment: .top) {
+                                Image(systemName: "circle.fill")
+                                    .font(.system(size: 8))
+                                    .padding(.top, 6)
+                                Text(point)
+                            }
+                        }
+                    }
+                }
+                
+                if let proTip = screen.proTip {
+                    VStack(alignment: .leading) {
+                        Text("Pro Tip:")
+                            .font(.headline)
+                        Text(proTip)
+                            .font(.body)
+                            .italic()
+                    }
+                    .padding()
+                    .background(Color.yellow.opacity(0.2))
+                    .cornerRadius(10)
+                }
+                
+                Spacer()
+            }
+            .padding()
+        }
     }
 }

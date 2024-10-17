@@ -11,6 +11,25 @@ import Combine
 import QuartzCore
 import os.log
 import CoreHaptics
+import Supabase
+
+// Remove HomeView import as it's not needed if HomeView is in the same module
+
+enum Tab {
+    case home, exercises, progress, settings
+}
+
+enum Exercise {
+    case kegel, boxBreathing, meditation
+    
+    var title: String {
+        switch self {
+        case .kegel: return "Kegel Exercise"
+        case .boxBreathing: return "Box Breathing"
+        case .meditation: return "Meditation"
+        }
+    }
+}
 
 // Remove SoundManager class
 
@@ -57,106 +76,97 @@ class HapticFeedback {
 
 // Add SettingsManager to handle customizable settings
 class SettingsManager: ObservableObject {
-    @Published var kegelContractDuration: Int {
-        didSet {
-            os_log("Kegel contract duration changed to: %{public}d", log: .default, type: .info, kegelContractDuration)
-            UserDefaults.standard.set(kegelContractDuration, forKey: "kegelContractDuration")
-        }
+    @Published var kegelContractDuration: Int = 5
+    @Published var kegelRelaxDuration: Int = 5
+    @Published var kegelRounds: Int = 10
+    @Published var inhaleDuration: Int = 4
+    @Published var hold1Duration: Int = 4
+    @Published var exhaleDuration: Int = 4
+    @Published var hold2Duration: Int = 4
+    @Published var boxBreathingRounds: Int = 7
+    @Published var meditationDuration: Int = 600
+    @Published var meditationSoundFile: String = "meditation1"
+    
+    private var supabaseClient: SupabaseClient
+    
+    init(supabaseClient: SupabaseClient) {
+        self.supabaseClient = supabaseClient
+        loadSettings()
     }
-    @Published var kegelRelaxDuration: Int {
-        didSet {
-            os_log("Kegel relax duration changed to: %{public}d", log: .default, type: .info, kegelRelaxDuration)
-            UserDefaults.standard.set(kegelRelaxDuration, forKey: "kegelRelaxDuration")
-        }
-    }
-    @Published var kegelRounds: Int {
-        didSet {
-            os_log("Kegel rounds changed to: %{public}d", log: .default, type: .info, kegelRounds)
-            UserDefaults.standard.set(kegelRounds, forKey: "kegelRounds")
+    
+    func loadSettings() {
+        Task {
+            do {
+                let response = try await supabaseClient
+                    .from("user_settings")
+                    .select()
+                    .single()
+                    .execute()
+                
+                let jsonData = response.data
+                let decoder = JSONDecoder()
+                let settings = try decoder.decode(UserSettings.self, from: jsonData)
+                DispatchQueue.main.async {
+                    self.kegelContractDuration = settings.kegelContractDuration
+                    self.kegelRelaxDuration = settings.kegelRelaxDuration
+                    self.kegelRounds = settings.kegelRounds
+                    self.inhaleDuration = settings.inhaleDuration
+                    self.hold1Duration = settings.hold1Duration
+                    self.exhaleDuration = settings.exhaleDuration
+                    self.hold2Duration = settings.hold2Duration
+                    self.boxBreathingRounds = settings.boxBreathingRounds
+                    self.meditationDuration = settings.meditationDuration
+                    self.meditationSoundFile = settings.meditationSoundFile
+                }
+            } catch {
+                print("Error loading settings: \(error)")
+            }
         }
     }
     
-    @Published var inhaleDuration: Int {
-        didSet {
-            os_log("Inhale duration changed to: %{public}d", log: .default, type: .info, inhaleDuration)
-            UserDefaults.standard.set(inhaleDuration, forKey: "inhaleDuration")
-        }
-    }
-    @Published var hold1Duration: Int {
-        didSet {
-            os_log("Hold 1 duration changed to: %{public}d", log: .default, type: .info, hold1Duration)
-            UserDefaults.standard.set(hold1Duration, forKey: "hold1Duration")
-        }
-    }
-    @Published var exhaleDuration: Int {
-        didSet {
-            os_log("Exhale duration changed to: %{public}d", log: .default, type: .info, exhaleDuration)
-            UserDefaults.standard.set(exhaleDuration, forKey: "exhaleDuration")
-        }
-    }
-    @Published var hold2Duration: Int {
-        didSet {
-            os_log("Hold 2 duration changed to: %{public}d", log: .default, type: .info, hold2Duration)
-            UserDefaults.standard.set(hold2Duration, forKey: "hold2Duration")
-        }
-    }
-    @Published var boxBreathingRounds: Int {
-        didSet {
-            os_log("Box breathing rounds changed to: %{public}d", log: .default, type: .info, boxBreathingRounds)
-            UserDefaults.standard.set(boxBreathingRounds, forKey: "boxBreathingRounds")
-        }
-    }
-    
-    @Published var meditationDuration: Int {
-        didSet {
-            os_log("Meditation duration changed to: %{public}d", log: .default, type: .info, meditationDuration)
-            UserDefaults.standard.set(meditationDuration, forKey: "meditationDuration")
-        }
-    }
-    
-    @Published var meditationSoundFile: String {
-        didSet {
-            os_log("Meditation sound file changed to: %{public}@", log: .default, type: .info, meditationSoundFile)
-            UserDefaults.standard.set(meditationSoundFile, forKey: "meditationSoundFile")
-        }
-    }
-    
-    init() {
-        self.kegelContractDuration = UserDefaults.standard.integer(forKey: "kegelContractDuration") != 0 ? UserDefaults.standard.integer(forKey: "kegelContractDuration") : 5
-        self.kegelRelaxDuration = UserDefaults.standard.integer(forKey: "kegelRelaxDuration") != 0 ? UserDefaults.standard.integer(forKey: "kegelRelaxDuration") : 5
-        self.kegelRounds = UserDefaults.standard.integer(forKey: "kegelRounds") != 0 ? UserDefaults.standard.integer(forKey: "kegelRounds") : 10
+    func saveSettings() {
+        let settings = UserSettings(
+            kegelContractDuration: kegelContractDuration,
+            kegelRelaxDuration: kegelRelaxDuration,
+            kegelRounds: kegelRounds,
+            inhaleDuration: inhaleDuration,
+            hold1Duration: hold1Duration,
+            exhaleDuration: exhaleDuration,
+            hold2Duration: hold2Duration,
+            boxBreathingRounds: boxBreathingRounds,
+            meditationDuration: meditationDuration,
+            meditationSoundFile: meditationSoundFile
+        )
         
-        self.inhaleDuration = UserDefaults.standard.integer(forKey: "inhaleDuration") != 0 ? UserDefaults.standard.integer(forKey: "inhaleDuration") : 4
-        self.hold1Duration = UserDefaults.standard.integer(forKey: "hold1Duration") != 0 ? UserDefaults.standard.integer(forKey: "hold1Duration") : 4
-        self.exhaleDuration = UserDefaults.standard.integer(forKey: "exhaleDuration") != 0 ? UserDefaults.standard.integer(forKey: "exhaleDuration") : 4
-        self.hold2Duration = UserDefaults.standard.integer(forKey: "hold2Duration") != 0 ? UserDefaults.standard.integer(forKey: "hold2Duration") : 4
-        self.boxBreathingRounds = UserDefaults.standard.integer(forKey: "boxBreathingRounds") != 0 ? UserDefaults.standard.integer(forKey: "boxBreathingRounds") : 7
-        
-        self.meditationDuration = UserDefaults.standard.integer(forKey: "meditationDuration") != 0 ? UserDefaults.standard.integer(forKey: "meditationDuration") : 600
-        
-        self.meditationSoundFile = UserDefaults.standard.string(forKey: "meditationSoundFile") ?? "meditation1"
-        print("Initial meditation sound file: \(self.meditationSoundFile)")
+        Task {
+            do {
+                try await supabaseClient
+                    .from("user_settings")
+                    .upsert(settings)
+                    .execute()
+            } catch {
+                print("Error saving settings: \(error)")
+            }
+        }
     }
+    
+    func friendlyNameForSoundFile(_ soundFile: String) -> String {
+        // Implement the logic to return a friendly name for the sound file
+        return soundFile // For now, just return the sound file name
+    }
+}
 
-    // Add this helper function
-    func friendlyNameForSoundFile(_ file: String) -> String {
-        switch file {
-        case "meditation1": return "Earth"
-        case "meditation2": return "Sky"
-        case "meditation3": return "Ocean"
-        default: return "None"
-        }
-    }
-
-    // Add this helper function
-    func soundFileForFriendlyName(_ name: String) -> String {
-        switch name {
-        case "Earth": return "meditation1"
-        case "Sky": return "meditation2"
-        case "Ocean": return "meditation3"
-        default: return "None"
-        }
-    }
+struct UserSettings: Codable {
+    let kegelContractDuration: Int
+    let kegelRelaxDuration: Int
+    let kegelRounds: Int
+    let inhaleDuration: Int
+    let hold1Duration: Int
+    let exhaleDuration: Int
+    let hold2Duration: Int
+    let boxBreathingRounds: Int
+    let meditationDuration: Int
+    let meditationSoundFile: String
 }
 
 struct DailyProgress: Codable {
@@ -173,53 +183,54 @@ struct DailyProgress: Codable {
     }
 }
 
+// Add this near the top of the file, after the import statements
 class ProgressManager: ObservableObject {
     @Published var dailyProgress: [DailyProgress] = []
+    private let supabaseClient: SupabaseClient
     
-    private let userDefaults = UserDefaults.standard
-    private let progressKey = "dailyProgress"
-    
-    init() {
+    init(supabaseClient: SupabaseClient) {
+        self.supabaseClient = supabaseClient
         loadProgress()
     }
     
-    func updateProgress(date: Date, kegelPercentage: Double, boxBreathingPercentage: Double, meditationPercentage: Double) {
-        os_log("Updating progress - Kegel: %{public}f, Box Breathing: %{public}f, Meditation: %{public}f", log: .default, type: .info, kegelPercentage, boxBreathingPercentage, meditationPercentage)
-        let overallPercentage = (kegelPercentage + boxBreathingPercentage + meditationPercentage) / 3
-        
-        let status: DailyProgress.ProgressStatus
-        if overallPercentage >= 0.99 {
-            status = .fullyCompleted
-        } else if overallPercentage > 0 {
-            status = .partiallyCompleted
-        } else {
-            status = .notCompleted
-        }
-        
-        os_log("Progress status: %{public}@", log: .default, type: .info, String(describing: status))
-        
-        if let index = dailyProgress.firstIndex(where: { Calendar.current.isDate($0.date, inSameDayAs: date) }) {
-            dailyProgress[index] = DailyProgress(date: date, status: status, kegelPercentage: kegelPercentage, boxBreathingPercentage: boxBreathingPercentage, meditationPercentage: meditationPercentage)
-        } else {
-            dailyProgress.append(DailyProgress(date: date, status: status, kegelPercentage: kegelPercentage, boxBreathingPercentage: boxBreathingPercentage, meditationPercentage: meditationPercentage))
-        }
-        saveProgress()
-    }
-    
-    private func saveProgress() {
-        let encoder = JSONEncoder()
-        if let encoded = try? encoder.encode(dailyProgress) {
-            userDefaults.set(encoded, forKey: progressKey)
-        }
-    }
-    
-    private func loadProgress() {
-        if let savedProgress = userDefaults.object(forKey: progressKey) as? Data {
-            let decoder = JSONDecoder()
-            if let loadedProgress = try? decoder.decode([DailyProgress].self, from: savedProgress) {
-                dailyProgress = loadedProgress
+    func loadProgress() {
+        Task {
+            do {
+                let response = try await supabaseClient
+                    .from("daily_progress")
+                    .select()
+                    .order("date", ascending: false)
+                    .execute()
+                
+                let jsonData = response.data
+                let decoder = JSONDecoder()
+                let progress = try decoder.decode([DailyProgress].self, from: jsonData)
+                DispatchQueue.main.async {
+                    self.dailyProgress = progress
+                }
+            } catch {
+                print("Error loading progress: \(error)")
             }
         }
+    }
+    
+    func saveProgress(_ progress: DailyProgress) {
+        Task {
+            do {
+                try await supabaseClient
+                    .from("daily_progress")
+                    .upsert(progress)
+                    .execute()
+                
+                loadProgress() // Reload progress after saving
+            } catch {
+                print("Error saving progress: \(error)")
+            }
+        }
+    }
+    
+    func updateProgress(date: Date, kegelPercentage: Double, boxBreathingPercentage: Double, meditationPercentage: Double) {
+        // Implement the logic to update progress
     }
 }
 
@@ -286,534 +297,76 @@ struct TutorialContent {
     ]
 }
 
-struct ContentView: View {
-    @State private var currentExercise: Exercise?
-    @State private var isExerciseActive = false
-    @State private var selectedTab: Tab = .home
-    
-    // Initialize SettingsManager
-    @StateObject private var settings = SettingsManager()
-    @StateObject private var progressManager = ProgressManager()
-    
-    @State private var showTutorial = false // Keep this line
-    
-    enum Exercise: CaseIterable {
-        case kegel, boxBreathing, meditation
-        
-        var title: String {
-            switch self {
-            case .kegel: return "Kegel Exercises"
-            case .boxBreathing: return "Box Breathing"
-            case .meditation: return "Meditation"
-            }
-        }
-        
-        var iconName: String {
-            switch self {
-            case .kegel: return "figure.strengthtraining.traditional"
-            case .boxBreathing: return "wind"
-            case .meditation: return "figure.mind.and.body"
-            }
-        }
-        
-        var description: String {
-            switch self {
-            case .kegel:
-                return "Kegel exercises strengthen your pelvic floor muscles – a crucial but often neglected part of male fitness and sexual health."
-            case .boxBreathing:
-                return "Box breathing is a powerful technique used by elite athletes and Navy SEALs to maintain calm and focus under pressure."
-            case .meditation:
-                return "Meditation is mental training that sharpens your mind and builds emotional resilience. It's not just for monks – it's for warriors who want to conquer their inner battlefield."
-            }
-        }
-        
-        var benefits: [String] {
-            switch self {
-            case .kegel:
-                return [
-                    "Enhance Sexual Function: Improve blood flow for stronger erections and more intense orgasms.",
-                    "Prevent Urinary Incontinence: Maintain urinary control, especially important as men age.",
-                    "Support Core Stability: Contribute to better posture and reduced lower back pain."
-                ]
-            case .boxBreathing:
-                return [
-                    "Activate the Parasympathetic Nervous System: Trigger your body's relaxation response, reducing cortisol levels.",
-                    "Improve CO2 Tolerance: Enhance your body's ability to tolerate CO2, potentially improving athletic performance and reducing anxiety.",
-                    "Enhance Heart Rate Variability: Increase heart rate variability, a key indicator of cardiovascular health and stress resilience."
-                ]
-            case .meditation:
-                return [
-                    "Neuroplasticity: Increase gray matter density in areas associated with learning, memory, and emotional regulation.",
-                    "Telomere Preservation: Potentially slow cellular aging by preserving telomere length, extending lifespan.",
-                    "Enhanced Emotional Intelligence: Improve self-awareness and empathy, crucial for leadership and relationships."
-                ]
-            }
-        }
-        
-        var howTo: String {
-            switch self {
-            case .kegel:
-                return "1. Identify the right muscles by stopping urination midstream.\n2. Tighten these muscles for 5 seconds.\n3. Relax for 5 seconds.\n4. Repeat for several rounds."
-            case .boxBreathing:
-                return "1. Inhale slowly for 4 seconds\n2. Hold your breath for 4 seconds\n3. Exhale slowly for 4 seconds\n4. Hold your breath for 4 seconds\n5. Repeat for several rounds."
-            case .meditation:
-                return "1. Find a quiet place and sit comfortably\n2. Close your eyes and focus on your breath\n3. When your mind wanders, gently bring attention back to your breath\n4. Start with 5 minutes and gradually increase"
-            }
-        }
-        
-        var scienceInfo: String? {
-            switch self {
-            case .kegel:
-                return "Kegels work by increasing the strength and endurance of the pubococcygeus (PC) muscle, which supports the pelvic organs and plays a crucial role in sexual function."
-            case .boxBreathing:
-                return "Box breathing works by regulating the autonomic nervous system, balancing the ratio of oxygen to carbon dioxide in your bloodstream, which can reduce stress and improve focus."
-            case .meditation:
-                return "Meditation alters brain wave patterns, increasing alpha and theta waves associated with relaxation and deep focus. It also reduces activity in the brain's default mode network, responsible for mind-wandering."
-            }
-        }
-        
-        var proTip: String? {
-            switch self {
-            case .kegel:
-                return "Practice Kegels discreetly anytime, anywhere. No one will know you're doing them!"
-            case .boxBreathing:
-                return "Use box breathing before important meetings, workouts, or whenever you need to perform at your best."
-            case .meditation:
-                return "Consistency is key. Even 5 minutes daily can make a significant impact on your brain structure and function."
-            }
-        }
-    }
-    
-    enum Tab {
-        case home
-        case exercises
-        case progress
-        case settings
-    }
+// Add this struct after the existing structs and before the ContentView struct
+
+struct ExercisePreviewCard: View {
+    let title: String
+    let icon: String
+    let color: Color
     
     var body: some View {
-        NavigationStack {
-            mainContent
-        }
-        .environmentObject(settings)
-        .environmentObject(progressManager)
-        .sheet(isPresented: $showTutorial) {
-            TutorialView(showTutorial: $showTutorial)
-        }
-    }
-    
-    private var mainContent: some View {
-        VStack {
-            // Main Content based on Selected Tab
-            switch selectedTab {
-            case .home:
-                homeView
-            case .exercises:
-                exercisesView
-            case .progress:
-                progressView
-            case .settings:
-                settingsView
-            }
-            
-            // Bottom Navigation Bar
-            bottomNavigationBar
-        }
-        .navigationDestination(isPresented: $isExerciseActive) {
-            ExerciseView(initialExercise: currentExercise ?? .kegel, isPresented: $isExerciseActive, progressManager: progressManager)
-        }
-        .navigationBarHidden(true)
-    }
-    
-    // MARK: - Home View
-    private var homeView: some View {
-        ScrollView {
-            VStack(spacing: 20) {
-                // ALPHAflow Title
-                HStack(spacing: 0) {
-                    Text("ALPHA")
-                        .fontWeight(.bold)
-                    Text("flow")
-                        .italic()
-                }
-                .font(.system(size: 40))
-                .frame(maxWidth: .infinity, alignment: .center)
-                .padding(.top, 20)
-                
-                // Today's Session Card
-                VStack {
-                    Text("Today's Session")
-                        .font(.headline)
-                        .padding(.bottom, 5)
-                    
-                    HStack(spacing: 15) {
-                        exerciseInfoView(icon: "figure.walk", name: "Kegel", duration: "\(settings.kegelRounds) rounds")
-                        exerciseInfoView(icon: "wind", name: "Box Breathing", duration: "\(settings.boxBreathingRounds) rounds")
-                        exerciseInfoView(icon: "brain", name: "Meditation", duration: "\(settings.meditationDuration / 60) min")
-                    }
-                    
-                    Button(action: {
-                        startSession()
-                    }) {
-                        Text("Start Session")
-                            .font(.headline)
-                            .foregroundColor(.white)
-                            .frame(maxWidth: .infinity)
-                            .padding()
-                            .background(Color.blue)
-                            .cornerRadius(10)
-                    }
-                    .padding(.top)
-                }
-                .padding()
-                .background(Color.blue.opacity(0.1))
-                .cornerRadius(15)
-                
-                // Progress Overview
-                VStack(alignment: .leading, spacing: 10) {
-                    Text("Progress Overview")
-                        .font(.headline)
-                    
-                    WeekProgressView()
-                        .frame(height: 100)
-                    
-                    HStack {
-                        Text("Current Streak:")
-                        Spacer()
-                        Text("\(calculateStreak()) \(calculateStreak() == 1 ? "day" : "days")")
-                            .fontWeight(.bold)
-                    }
-                    .padding(.top, 5)
-                }
-                .padding()
-                .background(Color.green.opacity(0.1))
-                .cornerRadius(15)
-                
-                // View Tutorial Button
-                Button(action: {
-                    showTutorial = true
-                }) {
-                    Text("View Tutorial")
-                        .font(.headline)
-                        .foregroundColor(.white)
-                        .frame(maxWidth: .infinity)
-                        .padding()
-                        .background(Color.blue)
-                        .cornerRadius(10)
-                }
-                .padding(.horizontal)
-                
-                // Daily Motivation
-                VStack(alignment: .leading, spacing: 10) {
-                    Text("Daily Motivation")
-                        .font(.headline)
-                    
-                    Text(getDailyMotivation())
-                        .italic()
-                        .foregroundColor(.secondary)
-                }
-                .padding()
-                .background(Color.orange.opacity(0.1))
-                .cornerRadius(15)
-            }
-            .padding()
-        }
-    }
-    
-    private func exerciseInfoView(icon: String, name: String, duration: String) -> some View {
         VStack {
             Image(systemName: icon)
-                .font(.title2)
-                .foregroundColor(.blue)
-            Text(name)
-                .font(.caption)
-                .fontWeight(.medium)
-            Text(duration)
-                .font(.caption2)
-                .foregroundColor(.secondary)
-        }
-        .frame(maxWidth: .infinity)
-    }
-    
-    private func calculateStreak() -> Int {
-        var streak = 0
-        let sortedProgress = progressManager.dailyProgress.sorted { $0.date > $1.date }
-        
-        for progress in sortedProgress {
-            if progress.status == .fullyCompleted {
-                streak += 1
-            } else {
-                break
-            }
-        }
-        
-        return streak
-    }
-    
-    private func getDailyMotivation() -> String {
-        // Implement logic to get a daily motivation quote
-        return "Every small step leads to big changes. Keep going!"
-    }
-    
-    // MARK: - Exercises View
-    private var exercisesView: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 20) {
-                Text("Exercise Overview")
-                    .font(.largeTitle)
-                    .fontWeight(.bold)
-                    .padding(.horizontal)
-                
-                overviewSection
-                
-                ForEach(Exercise.allCases, id: \.self) { exercise in
-                    exerciseInfoCard(for: exercise)
-                }
-            }
-            .padding()
-        }
-    }
-    
-    private var overviewSection: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            Text("Daily Practice Benefits")
-                .font(.title2)
-                .fontWeight(.semibold)
-            
-            Text("Incorporating Kegel exercises, box breathing, and meditation into your daily routine can lead to significant improvements in your overall well-being. This combination strengthens your pelvic floor, enhances stress management, improves focus, and promotes relaxation. Regular practice can result in better bladder control, reduced anxiety, improved cardiovascular health, and increased mindfulness in daily life.")
-                .font(.body)
-        }
-        .padding()
-        .background(Color.blue.opacity(0.1))
-        .cornerRadius(10)
-    }
-    
-    private func exerciseInfoCard(for exercise: Exercise) -> some View {
-        VStack(alignment: .leading, spacing: 10) {
-            HStack {
-                Image(systemName: exercise.iconName)
-                    .foregroundColor(.blue)
-                Text(exercise.title)
-                    .font(.title2)
-                    .fontWeight(.semibold)
-            }
-            
-            Text(exercise.description)
-                .font(.body)
-            
-            Text("Key Benefits:")
-                .font(.headline)
-                .padding(.top, 5)
-            
-            ForEach(exercise.benefits, id: \.self) { benefit in
-                HStack(alignment: .top) {
-                    Image(systemName: "checkmark.circle.fill")
-                        .foregroundColor(.green)
-                    Text(benefit)
-                }
-            }
-            
-            Text("How to perform:")
-                .font(.headline)
-                .padding(.top, 5)
-            
-            Text(exercise.howTo)
-                .font(.body)
-            
-            if let scienceInfo = exercise.scienceInfo {
-                Text("The Science:")
-                    .font(.headline)
-                    .padding(.top, 5)
-                
-                Text(scienceInfo)
-                    .font(.body)
-            }
-            
-            if let proTip = exercise.proTip {
-                Text("Pro Tip:")
-                    .font(.headline)
-                    .padding(.top, 5)
-                
-                Text(proTip)
-                    .font(.body)
-                    .italic()
-            }
-        }
-        .padding()
-        .background(Color.gray.opacity(0.1))
-        .cornerRadius(10)
-    }
-    
-    // MARK: - Progress View
-    private var progressView: some View {
-        VStack(spacing: 20) {
-            Text("Your Progress")
-                .font(.title2)
-                .fontWeight(.semibold)
-                .padding(.top)
-            
-            MonthProgressView()
-                .padding()
-            
-            Spacer()
-        }
-    }
-    
-    // MARK: - Settings View
-    private var settingsView: some View {
-        Form {
-            Section(header: Text("Preferences")) {
-                Toggle("Dark Mode", isOn: .constant(false))
-                Toggle("Enable Sounds", isOn: .constant(true))
-            }
-            
-            Section(header: Text("Account")) {
-                NavigationLink(destination: Text("Profile Settings")) {
-                    Text("Profile")
-                }
-                NavigationLink(destination: Text("Privacy Settings")) {
-                    Text("Privacy")
-                }
-            }
-            
-            Section {
-                Button(action: {
-                    // Handle Logout
-                }) {
-                    Text("Logout")
-                        .foregroundColor(.red)
-                }
-            }
-            
-            // New Premium Features Section
-            Section {
-                Text("Premium Features")
-                    .font(.title2)
-                    .fontWeight(.bold)
-                    .frame(maxWidth: .infinity, alignment: .center)
-                    .padding(.vertical, 10)
-                    .foregroundColor(.blue)
-            }
-            
-            // Add Kegel Settings
-            Section(header: Text("Kegel Settings")) {
-                Stepper("Contract Duration: \(settings.kegelContractDuration) seconds", value: $settings.kegelContractDuration, in: 1...60)
-                Stepper("Relax Duration: \(settings.kegelRelaxDuration) seconds", value: $settings.kegelRelaxDuration, in: 1...60)
-                Stepper("Rounds: \(settings.kegelRounds)", value: $settings.kegelRounds, in: 1...100)
-            }
-            
-            // Add Box Breathing Settings
-            Section(header: Text("Box Breathing Settings")) {
-                Stepper("Inhale Duration: \(settings.inhaleDuration) seconds", value: $settings.inhaleDuration, in: 1...60)
-                Stepper("Hold Duration 1: \(settings.hold1Duration) seconds", value: $settings.hold1Duration, in: 1...60)
-                Stepper("Exhale Duration: \(settings.exhaleDuration) seconds", value: $settings.exhaleDuration, in: 1...60)
-                Stepper("Hold Duration 2: \(settings.hold2Duration) seconds", value: $settings.hold2Duration, in: 1...60)
-                Stepper("Rounds: \(settings.boxBreathingRounds)", value: $settings.boxBreathingRounds, in: 1...100)
-            }
-            
-            // Add Meditation Settings
-            Section(header: Text("Meditation Settings")) {
-                Stepper("Duration: \(settings.meditationDuration / 60) minutes", value: $settings.meditationDuration, in: 60...3600, step: 60)
-                
-                Picker("Meditation Sound", selection: $settings.meditationSoundFile) {
-                    Text("None").tag("None")
-                    Text("Earth").tag("meditation1")
-                    Text("Sky").tag("meditation2")
-                    Text("Ocean").tag("meditation3")
-                }
-            }
-            
-            Section(header: Text("Tutorial")) {
-                Button("View Tutorial") {
-                    showTutorial = true
-                }
-            }
-        }
-    }
-    
-    // MARK: - Bottom Navigation Bar
-    private var bottomNavigationBar: some View {
-        HStack {
-            Spacer()
-            tabBarItem(icon: "house.fill", title: "Home", selected: selectedTab == .home) {
-                selectedTab = .home
-            }
-            Spacer()
-            tabBarItem(icon: "figure.walk", title: "Exercises", selected: selectedTab == .exercises) {
-                selectedTab = .exercises
-            }
-            Spacer()
-            tabBarItem(icon: "chart.bar.fill", title: "Progress", selected: selectedTab == .progress) {
-                selectedTab = .progress
-            }
-            Spacer()
-            tabBarItem(icon: "gearshape.fill", title: "Settings", selected: selectedTab == .settings) {
-                selectedTab = .settings
-            }
-            Spacer()
-        }
-        .padding(.vertical, 10)
-        .background(Color(UIColor.systemBackground).shadow(radius: 2))
-    }
-    
-    private func tabBarItem(icon: String, title: String, selected: Bool, action: @escaping () -> Void) -> some View {
-        Button(action: action) {
-            VStack {
-                Image(systemName: icon)
-                    .font(.system(size: 20, weight: .semibold))
-                Text(title)
-                    .font(.caption)
-            }
-            .foregroundColor(selected ? Color.blue : Color.gray)
-        }
-    }
-    
-    // MARK: - Helper Views
-    private func CardView(title: String, content: String) -> some View {
-        VStack(alignment: .leading, spacing: 10) {
+                .font(.system(size: 30))
+                .foregroundColor(color)
             Text(title)
-                .font(.headline)
-                .foregroundColor(.white)
-            Text(content)
-                .font(.subheadline)
-                .foregroundColor(.white.opacity(0.85))
+                .font(.caption)
+                .foregroundColor(.primary)
         }
-        .padding()
-        .background(
-            LinearGradient(gradient: Gradient(colors: [Color.blue, Color.teal]), startPoint: .topLeading, endPoint: .bottomTrailing)
-        )
-        .cornerRadius(15)
-        .shadow(radius: 5)
+        .frame(width: 80, height: 80)
+        .background(color.opacity(0.1))
+        .cornerRadius(10)
     }
-    
-    private func ProgressChartView() -> some View {
-        RoundedRectangle(cornerRadius: 10)
-            .fill(Color.gray.opacity(0.2))
-            .overlay(
-                Text("Chart Placeholder")
-                    .foregroundColor(.gray)
-            )
-    }
-    
-    // MARK: - Added Functions
-    
-    private func startSession() {
-        os_log("Starting new session", log: .default, type: .info)
-        currentExercise = .kegel
-        isExerciseActive = true
+}
+
+struct ContentView: View {
+    @EnvironmentObject var supabaseManager: SupabaseManager
+    @State private var selectedTab: Tab = .home
+
+    var body: some View {
+        Group {
+            if supabaseManager.currentUser != nil {
+                TabView(selection: $selectedTab) {
+                    HomeView()
+                        .tabItem {
+                            Label("Home", systemImage: "house.fill")
+                        }
+                        .tag(Tab.home)
+                    
+                    Text("Exercises")
+                        .tabItem {
+                            Label("Exercises", systemImage: "figure.walk")
+                        }
+                        .tag(Tab.exercises)
+                    
+                    Text("Progress")
+                        .tabItem {
+                            Label("Progress", systemImage: "chart.bar.fill")
+                        }
+                        .tag(Tab.progress)
+                    
+                    UserProfileView()
+                        .tabItem {
+                            Label("Settings", systemImage: "gearshape.fill")
+                        }
+                        .tag(Tab.settings)
+                }
+            } else {
+                AuthView()
+            }
+        }
     }
 }
 
 // MARK: - Exercise Extensions
-extension ContentView.Exercise {
+extension Exercise {
     // Remove duplicate declarations of title, iconName, description, benefits, howTo, scienceInfo, and proTip
     
     // Add any additional properties or methods specific to the extension here
-    // For example:
     
     var emoji: String {
         switch self {
-        case .kegel: return "💪"
+        case .kegel: return "🌵"
         case .boxBreathing: return "🧘‍♂️"
         case .meditation: return "🧠"
         }
@@ -831,121 +384,78 @@ extension ContentView.Exercise {
 // MARK: - ExerciseView
 struct ExerciseView: View {
     @EnvironmentObject var settings: SettingsManager
-    @State private var exercise: ContentView.Exercise
+    @Binding var exerciseQueue: [Exercise]
     @Binding var isPresented: Bool
     @ObservedObject var progressManager: ProgressManager
     
+    @State private var currentExercise: Exercise?
     @State private var kegelPercentage: Double = 0
     @State private var boxBreathingPercentage: Double = 0
     @State private var meditationPercentage: Double = 0
     
-    @State private var currentExerciseIndex: Int = 0
-    @State private var exercises: [ContentView.Exercise] = [.kegel, .boxBreathing, .meditation]
-    
-    init(initialExercise: ContentView.Exercise, isPresented: Binding<Bool>, progressManager: ProgressManager) {
-        self._exercise = State(initialValue: initialExercise)
-        self._isPresented = isPresented
-        self.progressManager = progressManager
-    }
-    
     var body: some View {
-        VStack(spacing: 20) {
-            Text(exercise.title)
-                .font(.largeTitle)
-                .fontWeight(.bold)
-                .padding(.top)
-            
-            exerciseContent
-                .frame(maxHeight: .infinity)
-                .background(
-                    DynamicBackgroundView(exercise: exercise)
-                )
-                .edgesIgnoringSafeArea(.all)
-            
-            if exercise == .meditation {
-                Button(action: {
-                    endSession()
-                }) {
-                    Text("End Session")
-                        .font(.headline)
-                        .foregroundColor(.blue)
-                        .padding()
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 12)
-                                .stroke(Color.blue, lineWidth: 2)
-                        )
-                }
-            } else {
-                HStack {
-                    Button(action: {
-                        isPresented = false
-                    }) {
-                        Text("Exit")
-                            .font(.headline)
-                            .foregroundColor(.blue)
-                            .padding()
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 12)
-                                    .stroke(Color.blue, lineWidth: 2)
-                            )
-                    }
-                    
-                    Button(action: {
-                        performSkip()
-                    }) {
-                        Text("Skip")
-                            .font(.headline)
-                            .foregroundColor(.blue)
-                            .padding()
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 12)
-                                    .stroke(Color.blue, lineWidth: 2)
-                            )
-                    }
+        NavigationView {
+            VStack {
+                if let exercise = currentExercise {
+                    exerciseContent(for: exercise)
+                } else {
+                    Text("Preparing next exercise...")
+                        .onAppear(perform: startNextExercise)
                 }
             }
+            .navigationBarItems(
+                leading: leadingBarItem,
+                trailing: trailingBarItem
+            )
         }
-        .padding(.horizontal)
-        .padding(.bottom)
-        .background(Color(UIColor.systemBackground))
-        .navigationBarHidden(true)
+        .onAppear(perform: startNextExercise)
     }
     
-    @ViewBuilder
-    private var exerciseContent: some View {
-        switch exercise {
-        case .kegel:
-            KegelView(onComplete: handleExerciseComplete, progressPercentage: $kegelPercentage)
-                .environmentObject(settings)
-                .onAppear { HapticFeedback.shared.isEnabled = true }
-        case .boxBreathing:
-            BoxBreathingView(onComplete: handleExerciseComplete, progressPercentage: $boxBreathingPercentage)
-                .environmentObject(settings)
-                .onAppear { HapticFeedback.shared.isEnabled = true }
-        case .meditation:
-            MeditationView(onComplete: handleExerciseComplete, progressPercentage: $meditationPercentage)
-                .environmentObject(settings)
-                .onAppear { HapticFeedback.shared.isEnabled = false }
+    private var leadingBarItem: some View {
+        if currentExercise != .meditation {
+            return AnyView(Button("Skip") {
+                handleExerciseComplete()
+            })
+        } else {
+            return AnyView(EmptyView())
         }
     }
     
-    private func handleExerciseComplete() {
-        currentExerciseIndex += 1
-        if currentExerciseIndex < exercises.count {
-            exercise = exercises[currentExerciseIndex]
+    private var trailingBarItem: some View {
+        Button("End Session") {
+            endSession()
+        }
+    }
+    
+    private func startNextExercise() {
+        if let nextExercise = exerciseQueue.first {
+            currentExercise = nextExercise
+            exerciseQueue.removeFirst()
         } else {
             endSession()
         }
     }
     
-    private func performSkip() {
-        handleExerciseComplete()
+    @ViewBuilder
+    private func exerciseContent(for exercise: Exercise) -> some View {
+        switch exercise {
+        case .kegel:
+            KegelView(onComplete: handleExerciseComplete, progressPercentage: $kegelPercentage)
+                .environmentObject(settings)
+        case .boxBreathing:
+            BoxBreathingView(onComplete: handleExerciseComplete, progressPercentage: $boxBreathingPercentage)
+                .environmentObject(settings)
+        case .meditation:
+            MeditationView(onComplete: handleExerciseComplete, progressPercentage: $meditationPercentage)
+                .environmentObject(settings)
+        }
+    }
+    
+    private func handleExerciseComplete() {
+        startNextExercise()
     }
     
     private func endSession() {
-        // Disable haptic feedback when the session ends
-        HapticFeedback.shared.isEnabled = false
-        
         progressManager.updateProgress(
             date: Date(),
             kegelPercentage: kegelPercentage,
@@ -958,7 +468,7 @@ struct ExerciseView: View {
 
 // MARK: - DynamicBackgroundView
 struct DynamicBackgroundView: View {
-    let exercise: ContentView.Exercise
+    let exercise: Exercise
 
     var body: some View {
         switch exercise {
@@ -1138,14 +648,12 @@ struct BoxBreathingView: View {
             Spacer()
             
             ZStack {
-                // Square shape
                 RoundedRectangle(cornerRadius: 15)
                     .stroke(Color.gray.opacity(0.3), lineWidth: 15)
                     .frame(width: 250, height: 250)
                 
-                // Progress indicator
                 BreathingProgressShape(progress: viewModel.progress, phase: viewModel.currentPhase)
-                    .stroke(Color.blue, lineWidth: 15)
+                    .stroke(Color.blue, style: StrokeStyle(lineWidth: 15, lineCap: .round, lineJoin: .round))
                     .frame(width: 250, height: 250)
                 
                 VStack {
@@ -1188,437 +696,336 @@ struct BoxBreathingView: View {
     }
 }
 
-// Add this class before the BoxBreathingView struct
-class BoxBreathingViewModel: ObservableObject {
-    @Published var currentPhase: BoxBreathingPhase = .inhale
-    @Published var phaseTimeRemaining: Double = 0
-    @Published var currentRound: Int = 1
-    @Published var progress: CGFloat = 0.0
-    @Published var isReady: Bool = false
-    @Published var isComplete: Bool = false
-    
-    private var settings: SettingsManager?
-    private var displayLink: CADisplayLink?
-    @Binding var progressPercentage: Double
-    
-    enum BoxBreathingPhase: String, CaseIterable {
-        case inhale = "Inhale"
-        case hold1 = "Hold Inhale"
-        case exhale = "Exhale"
-        case hold2 = "Hold Exhale"
-    }
-    
-    init(progressPercentage: Binding<Double>) {
-        self._progressPercentage = progressPercentage
-    }
-    
-    func updateSettings(_ newSettings: SettingsManager) {
-        self.settings = newSettings
-    }
-    
-    func startExercise() {
-        guard let settings = settings else { return }
-        currentRound = 1
-        currentPhase = .inhale
-        phaseTimeRemaining = Double(getDuration(for: currentPhase))
-        
-        // Add a small delay before starting the exercise
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-            self.isReady = true
-            self.startPhase()
-        }
-    }
-    
-    private func startPhase() {
-        phaseTimeRemaining = Double(getDuration(for: currentPhase))
-        progress = 0.0
-        
-        displayLink?.invalidate()
-        displayLink = CADisplayLink(target: self, selector: #selector(updateProgress))
-        displayLink?.add(to: .main, forMode: .common)
-    }
-    
-    @objc private func updateProgress() {
-        guard let settings = settings else { return }
-        let duration = Double(getDuration(for: currentPhase))
-        
-        if phaseTimeRemaining > 0 {
-            phaseTimeRemaining -= 1 / 60.0 // Assuming 60 FPS
-            progress = CGFloat(1.0 - (phaseTimeRemaining / duration))
-        } else {
-            nextPhase()
-        }
-        
-        updateProgressPercentage()
-        
-        if isComplete {
-            displayLink?.invalidate()
-            // Disable haptic feedback when the exercise is complete
-            HapticFeedback.shared.isEnabled = false
-        }
-    }
-    
-    private func nextPhase() {
-        guard let settings = settings else { return }
-        
-        // Play haptic feedback when transitioning phases
-        HapticFeedback.shared.playHapticFeedback()
-        
-        if let nextPhaseIndex = BoxBreathingPhase.allCases.firstIndex(of: currentPhase)?.advanced(by: 1),
-           nextPhaseIndex < BoxBreathingPhase.allCases.endIndex {
-            currentPhase = BoxBreathingPhase.allCases[nextPhaseIndex]
-            startPhase()
-        } else {
-            if currentRound >= settings.boxBreathingRounds {
-                displayLink?.invalidate()
-                progressPercentage = 1.0
-                isComplete = true
-                return
-            }
-            
-            currentRound += 1
-            currentPhase = .inhale
-            startPhase()
-        }
-    }
-    
-    private func getDuration(for phase: BoxBreathingPhase) -> Int {
-        guard let settings = settings else { return 4 } // Default duration
-        switch phase {
-        case .inhale: return settings.inhaleDuration
-        case .hold1: return settings.hold1Duration
-        case .exhale: return settings.exhaleDuration
-        case .hold2: return settings.hold2Duration
-        }
-    }
-    
-    private func updateProgressPercentage() {
-        guard let settings = settings else { return }
-        let totalDuration = Double(settings.boxBreathingRounds * 4) // 4 phases per round
-        let completedDuration = Double((currentRound - 1) * 4 + BoxBreathingPhase.allCases.firstIndex(of: currentPhase)!) + (1.0 - phaseTimeRemaining / Double(getDuration(for: currentPhase)))
-        progressPercentage = min(1.0, completedDuration / totalDuration)
-    }
-    
-    deinit {
-        displayLink?.invalidate()
-    }
-}
-
-struct BreathingProgressShape: Shape {
-    var progress: CGFloat
-    var phase: BoxBreathingViewModel.BoxBreathingPhase
-    
-    func path(in rect: CGRect) -> Path {
-        var path = Path()
-        let sideLength = min(rect.width, rect.height)
-        
-        let topLeft = CGPoint(x: rect.minX, y: rect.minY)
-        let topRight = CGPoint(x: rect.minX + sideLength, y: rect.minY)
-        let bottomRight = CGPoint(x: rect.minX + sideLength, y: rect.minY + sideLength)
-        let bottomLeft = CGPoint(x: rect.minX, y: rect.minY + sideLength)
-        
-        path.move(to: topLeft)
-        
-        switch phase {
-        case .inhale:
-            path.addLine(to: CGPoint(x: topLeft.x + sideLength * progress, y: topLeft.y))
-        case .hold1:
-            path.addLine(to: topRight)
-            path.addLine(to: CGPoint(x: topRight.x, y: topRight.y + sideLength * progress))
-        case .exhale:
-            path.addLine(to: topRight)
-            path.addLine(to: bottomRight)
-            path.addLine(to: CGPoint(x: bottomRight.x - sideLength * progress, y: bottomRight.y))
-        case .hold2:
-            path.addLine(to: topRight)
-            path.addLine(to: bottomRight)
-            path.addLine(to: bottomLeft)
-            path.addLine(to: CGPoint(x: bottomLeft.x, y: bottomLeft.y - sideLength * progress))
-        }
-        
-        return path
-    }
-}
-
-struct WeekProgressView: View {
-    @EnvironmentObject var progressManager: ProgressManager
+// Add this struct for the TutorialView
+struct TutorialView: View {
+    let screens: [TutorialScreen]
+    @State private var currentScreenIndex = 0
+    @Environment(\.presentationMode) var presentationMode
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text("This Week's Progress")
-                .font(.headline)
-            
-            HStack(spacing: 4) {
-                ForEach(0..<7) { index in
-                    let date = startOfWeek().addingTimeInterval(Double(index) * 24 * 60 * 60)
-                    let progress = progressManager.dailyProgress.first(where: { Calendar.current.isDate($0.date, inSameDayAs: date) })
-                    
-                    VStack {
-                        Text(dayAbbreviation(for: date))
-                            .font(.caption2)
-                        RoundedRectangle(cornerRadius: 4)
-                            .fill(colorForStatus(progress?.status))
-                            .frame(height: 20)
-                        Text(percentageText(for: progress))
-                            .font(.caption2)
-                    }
+        VStack {
+            TabView(selection: $currentScreenIndex) {
+                ForEach(0..<screens.count, id: \.self) { index in
+                    TutorialScreenView(screen: screens[index])
                 }
             }
+            .tabViewStyle(PageTabViewStyle(indexDisplayMode: .automatic))
             
-            HStack {
-                legendItem(color: .green, label: "Completed")
-                legendItem(color: .yellow, label: "Partial")
-                legendItem(color: .red, label: "Missed")
-            }
-            .font(.caption)
-        }
-    }
-    
-    private func startOfWeek() -> Date {
-        let calendar = Calendar.current
-        let today = Date()
-        if let sunday = calendar.date(from: calendar.dateComponents([.yearForWeekOfYear, .weekOfYear], from: today)) {
-            return sunday
-        }
-        return today // fallback to today if can't get Sunday for some reason
-    }
-    
-    private func dayAbbreviation(for date: Date) -> String {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "EEE"
-        return formatter.string(from: date).prefix(1).uppercased()
-    }
-    
-    private func legendItem(color: Color, label: String) -> some View {
-        HStack {
-            Circle()
-                .fill(color)
-                .frame(width: 8, height: 8)
-            Text(label)
-        }
-    }
-    
-    private func colorForStatus(_ status: DailyProgress.ProgressStatus?) -> Color {
-        switch status {
-        case .fullyCompleted:
-            return .green
-        case .partiallyCompleted:
-            return .yellow
-        case .notCompleted, .none:
-            return .red
-        }
-    }
-    
-    private func percentageText(for progress: DailyProgress?) -> String {
-        guard let progress = progress else { return "0%" }
-        let percentage = (progress.kegelPercentage + progress.boxBreathingPercentage + progress.meditationPercentage) / 3.0
-        return String(format: "%.0f%%", percentage * 100)
-    }
-}
-
-struct MonthProgressView: View {
-    @EnvironmentObject var progressManager: ProgressManager
-    @State private var currentDate: Date = Date()
-    
-    let columns = Array(repeating: GridItem(.flexible()), count: 7)
-    
-    var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            HStack {
-                Button(action: { moveMonth(by: -1) }) {
-                    Image(systemName: "chevron.left")
+            Button(action: {
+                if currentScreenIndex < screens.count - 1 {
+                    currentScreenIndex += 1
+                } else {
+                    presentationMode.wrappedValue.dismiss()
                 }
-                Spacer()
-                Text(currentMonthYear())
+            }) {
+                Text(currentScreenIndex < screens.count - 1 ? "Next" : "Get Started")
                     .font(.headline)
-                Spacer()
-                Button(action: { moveMonth(by: 1) }) {
-                    Image(systemName: "chevron.right")
-                }
-                .disabled(isCurrentMonth())
+                    .foregroundColor(.white)
+                    .padding()
+                    .frame(maxWidth: .infinity)
+                    .background(Color.blue)
+                    .cornerRadius(10)
             }
-            .padding(.horizontal)
+            .padding()
+        }
+    }
+}
+
+struct TutorialScreenView: View {
+    let screen: TutorialScreen
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 20) {
+            Text(screen.title)
+                .font(.largeTitle)
+                .fontWeight(.bold)
             
-            // Streak Counter
-            Text("Current Streak: \(calculateStreak()) \(calculateStreak() == 1 ? "day" : "days")")
-                .font(.headline)
-                .foregroundColor(.green)
+            Text(screen.content)
+                .font(.body)
             
-            // Weekly Progress View (only show for current month)
-            if isCurrentMonth() {
-                WeekProgressView()
-            }
-            
-            // Monthly Calendar
-            LazyVGrid(columns: columns, spacing: 4) {
-                ForEach(daysInMonth(), id: \.self) { date in
-                    if let date = date {
-                        let progress = progressManager.dailyProgress.first(where: { Calendar.current.isDate($0.date, inSameDayAs: date) })
-                        let isToday = Calendar.current.isDateInToday(date)
-                        
-                        VStack {
-                            Text("\(Calendar.current.component(.day, from: date))")
-                                .font(.caption2)
-                                .fontWeight(isToday ? .bold : .regular)
-                            RoundedRectangle(cornerRadius: 4)
-                                .fill(colorForStatus(progress?.status))
-                                .overlay(
-                                    Text(percentageText(for: progress))
-                                        .font(.system(size: 8))
-                                        .foregroundColor(.white)
-                                )
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: 4)
-                                        .stroke(isToday ? Color.blue : Color.clear, lineWidth: 2)
-                                )
-                        }
-                        .aspectRatio(1, contentMode: .fit)
-                    } else {
-                        Color.clear
-                    }
+            ForEach(screen.bulletPoints, id: \.self) { point in
+                HStack(alignment: .top) {
+                    Text("")
+                    Text(point)
                 }
             }
             
-            // Legend
-            HStack {
-                legendItem(color: .green, label: "Completed")
-                legendItem(color: .yellow, label: "Partial")
-                legendItem(color: .red, label: "Missed")
+            if let proTip = screen.proTip {
+                Text("Pro Tip:")
+                    .font(.headline)
+                Text(proTip)
+                    .font(.body)
+                    .italic()
             }
-            .font(.caption)
+            
+            Spacer()
         }
         .padding()
     }
+}
+
+// Add this struct for UserProfileView
+struct UserProfileView: View {
+    @EnvironmentObject var supabaseManager: SupabaseManager
+    @EnvironmentObject var settings: SettingsManager
+    @State private var name = ""
+    @State private var isLoading = false
+    @State private var showAlert = false
+    @State private var alertMessage = ""
     
-    private func currentMonthYear() -> String {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "MMMM yyyy"
-        return formatter.string(from: currentDate)
-    }
-    
-    private func moveMonth(by amount: Int) {
-        if let newDate = Calendar.current.date(byAdding: .month, value: amount, to: currentDate) {
-            currentDate = newDate
-        }
-    }
-    
-    private func isCurrentMonth() -> Bool {
-        return Calendar.current.isDate(currentDate, equalTo: Date(), toGranularity: .month)
-    }
-    
-    private func daysInMonth() -> [Date?] {
-        let calendar = Calendar.current
-        let range = calendar.range(of: .day, in: .month, for: currentDate)!
-        let firstDayOfMonth = calendar.date(from: calendar.dateComponents([.year, .month], from: currentDate))!
-        
-        let firstWeekday = calendar.component(.weekday, from: firstDayOfMonth)
-        let leadingEmptyDays = (firstWeekday - calendar.firstWeekday + 7) % 7
-        
-        var days: [Date?] = Array(repeating: nil, count: leadingEmptyDays)
-        
-        for day in 1...range.count {
-            if let date = calendar.date(byAdding: .day, value: day - 1, to: firstDayOfMonth) {
-                days.append(date)
+    var body: some View {
+        Form {
+            Section(header: Text("Profile Information")) {
+                TextField("Name", text: $name)
+            }
+            
+            Section(header: Text("Kegel Exercise Settings")) {
+                Stepper("Contract Duration: \(settings.kegelContractDuration)s", value: $settings.kegelContractDuration, in: 1...10)
+                Stepper("Relax Duration: \(settings.kegelRelaxDuration)s", value: $settings.kegelRelaxDuration, in: 1...10)
+                Stepper("Rounds: \(settings.kegelRounds)", value: $settings.kegelRounds, in: 1...20)
+            }
+            
+            Section(header: Text("Box Breathing Settings")) {
+                Stepper("Inhale Duration: \(settings.inhaleDuration)s", value: $settings.inhaleDuration, in: 1...10)
+                Stepper("Hold 1 Duration: \(settings.hold1Duration)s", value: $settings.hold1Duration, in: 1...10)
+                Stepper("Exhale Duration: \(settings.exhaleDuration)s", value: $settings.exhaleDuration, in: 1...10)
+                Stepper("Hold 2 Duration: \(settings.hold2Duration)s", value: $settings.hold2Duration, in: 1...10)
+                Stepper("Rounds: \(settings.boxBreathingRounds)", value: $settings.boxBreathingRounds, in: 1...20)
+            }
+            
+            Section(header: Text("Meditation Settings")) {
+                Stepper("Duration: \(settings.meditationDuration / 60) minutes", value: $settings.meditationDuration, in: 60...3600, step: 60)
+            }
+            
+            Section {
+                Button(action: updateProfile) {
+                    if isLoading {
+                        ProgressView()
+                    } else {
+                        Text("Update Profile")
+                    }
+                }
+                .disabled(isLoading)
+            }
+            
+            Section {
+                Button(action: signOut) {
+                    Text("Sign Out")
+                        .foregroundColor(.red)
+                }
+                .disabled(isLoading)
             }
         }
-        
-        // Add trailing empty days to complete the last week
-        let trailingEmptyDays = (7 - (days.count % 7)) % 7
-        days += Array(repeating: nil as Date?, count: trailingEmptyDays)
-        
-        return days
+        .navigationTitle("Settings")
+        .onAppear(perform: loadUserProfile)
+        .alert(isPresented: $showAlert) {
+            Alert(title: Text("Profile"), message: Text(alertMessage), dismissButton: .default(Text("OK")))
+        }
+        .onChange(of: settings.kegelContractDuration) { _, _ in settings.saveSettings() }
+        .onChange(of: settings.kegelRelaxDuration) { _, _ in settings.saveSettings() }
+        .onChange(of: settings.kegelRounds) { _, _ in settings.saveSettings() }
+        .onChange(of: settings.inhaleDuration) { _, _ in settings.saveSettings() }
+        .onChange(of: settings.hold1Duration) { _, _ in settings.saveSettings() }
+        .onChange(of: settings.exhaleDuration) { _, _ in settings.saveSettings() }
+        .onChange(of: settings.hold2Duration) { _, _ in settings.saveSettings() }
+        .onChange(of: settings.boxBreathingRounds) { _, _ in settings.saveSettings() }
+        .onChange(of: settings.meditationDuration) { _, _ in settings.saveSettings() }
     }
     
-    private func calculateStreak() -> Int {
-        var streak = 0
-        let sortedProgress = progressManager.dailyProgress.sorted { $0.date > $1.date }
+    private func loadUserProfile() {
+        guard let userId = supabaseManager.currentUser?.id else { return }
         
-        for progress in sortedProgress {
-            if progress.status == .fullyCompleted {
-                streak += 1
-            } else {
-                break
+        Task {
+            do {
+                let response = try await supabaseManager.client.from("profiles")
+                    .select()
+                    .eq("id", value: userId)
+                    .single()
+                    .execute()
+                
+                let jsonData = response.data
+                let decoder = JSONDecoder()
+                let profile = try decoder.decode(Profile.self, from: jsonData)
+                DispatchQueue.main.async {
+                    self.name = profile.name ?? ""
+                }
+            } catch {
+                print("Error loading profile: \(error)")
             }
         }
+    }
+    
+    private func updateProfile() {
+        guard let userId = supabaseManager.currentUser?.id else { return }
+        isLoading = true
         
-        return streak
-    }
-    
-    private func percentageText(for progress: DailyProgress?) -> String {
-        guard let progress = progress else { return "" }
-        let percentage = (progress.kegelPercentage + progress.boxBreathingPercentage + progress.meditationPercentage) / 3.0
-        return String(format: "%.0f%%", percentage * 100)
-    }
-    
-    private func colorForStatus(_ status: DailyProgress.ProgressStatus?) -> Color {
-        switch status {
-        case .fullyCompleted:
-            return .green
-        case .partiallyCompleted:
-            return .yellow
-        case .notCompleted, .none:
-            return .red
+        Task {
+            do {
+                let profile = Profile(id: userId, name: name)
+                try await supabaseManager.client.from("profiles")
+                    .upsert(profile)
+                    .execute()
+                
+                DispatchQueue.main.async {
+                    self.alertMessage = "Profile updated successfully"
+                    self.showAlert = true
+                    self.isLoading = false
+                }
+            } catch {
+                DispatchQueue.main.async {
+                    self.alertMessage = "Error updating profile: \(error.localizedDescription)"
+                    self.showAlert = true
+                    self.isLoading = false
+                }
+            }
         }
     }
     
-    private func legendItem(color: Color, label: String) -> some View {
-        HStack {
-            Circle()
-                .fill(color)
-                .frame(width: 8, height: 8)
-            Text(label)
+    private func signOut() {
+        Task {
+            do {
+                try await supabaseManager.signOut()
+                DispatchQueue.main.async {
+                    self.alertMessage = "Signed out successfully"
+                    self.showAlert = true
+                }
+            } catch {
+                DispatchQueue.main.async {
+                    self.alertMessage = "Error signing out: \(error.localizedDescription)"
+                    self.showAlert = true
+                }
+            }
         }
     }
 }
 
-extension Color {
-    init(hex: String) {
-        let hex = hex.trimmingCharacters(in: CharacterSet.alphanumerics.inverted)
-        var int: UInt64 = 0
-        Scanner(string: hex).scanHexInt64(&int)
-        let a, r, g, b: UInt64
-        switch hex.count {
-        case 3: // RGB (12-bit)
-            (a, r, g, b) = (255, (int >> 8) * 17, (int >> 4 & 0xF) * 17, (int & 0xF) * 17)
-        case 6: // RGB (24-bit)
-            (a, r, g, b) = (255, int >> 16, int >> 8 & 0xFF, int & 0xFF)
-        case 8: // ARGB (32-bit)
-            (a, r, g, b) = (int >> 24, int >> 16 & 0xFF, int >> 8 & 0xFF, int & 0xFF)
-        default:
-            (a, r, g, b) = (1, 1, 1, 0)
-        }
+struct Profile: Codable {
+    let id: UUID
+    let name: String?
+}
 
-        self.init(
-            .sRGB,
-            red: Double(r) / 255,
-            green: Double(g) / 255,
-            blue:  Double(b) / 255,
-            opacity: Double(a) / 255
-        )
+// Add this struct for the AuthView
+struct AuthView: View {
+    @EnvironmentObject var supabaseManager: SupabaseManager
+    @State private var email = ""
+    @State private var password = ""
+    @State private var isSignUp = false
+    @State private var isLoading = false
+    @State private var showAlert = false
+    @State private var alertMessage = ""
+    
+    var body: some View {
+        ZStack {
+            // Updated background gradient
+            LinearGradient(gradient: Gradient(colors: [Color.red.opacity(0.7), Color.orange.opacity(0.7)]), startPoint: .topLeading, endPoint: .bottomTrailing)
+                .edgesIgnoringSafeArea(.all)
+            
+            VStack(spacing: 30) {
+                // Logo or App Icon
+                Image(systemName: "leaf.fill") // Replace with your app's icon
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+                    .frame(width: 80, height: 80)
+                    .foregroundColor(.white)
+                
+                Text("Welcome to AlphaFlow")
+                    .font(.system(size: 28, weight: .bold))
+                    .foregroundColor(.white)
+                
+                VStack(spacing: 20) {
+                    TextField("Email", text: $email)
+                        .textFieldStyle(RoundedBorderTextFieldStyle())
+                        .autocapitalization(.none)
+                        .keyboardType(.emailAddress)
+                        .padding(.horizontal)
+                    
+                    SecureField("Password", text: $password)
+                        .textFieldStyle(RoundedBorderTextFieldStyle())
+                        .padding(.horizontal)
+                    
+                    Button(action: performAction) {
+                        if isLoading {
+                            ProgressView()
+                                .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                        } else {
+                            Text(isSignUp ? "Sign Up" : "Sign In")
+                                .fontWeight(.semibold)
+                        }
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding()
+                    .background(Color.white)
+                    .foregroundColor(.blue)
+                    .cornerRadius(10)
+                    .padding(.horizontal)
+                    .disabled(email.isEmpty || password.isEmpty || isLoading)
+                    
+                    Button(action: { isSignUp.toggle() }) {
+                        Text(isSignUp ? "Already have an account? Sign In" : "Don't have an account? Sign Up")
+                            .foregroundColor(.white)
+                            .underline()
+                    }
+                }
+                .padding()
+                .background(Color.black.opacity(0.2))
+                .cornerRadius(20)
+                .padding()
+            }
+        }
+        .alert(isPresented: $showAlert) {
+            Alert(title: Text("Authentication"), message: Text(alertMessage), dismissButton: .default(Text("OK")))
+        }
+    }
+    
+    private func performAction() {
+        isLoading = true
+        Task {
+            do {
+                if isSignUp {
+                    try await supabaseManager.signUp(email: email, password: password)
+                    alertMessage = "Sign up successful. You can now sign in."
+                } else {
+                    try await supabaseManager.signIn(email: email, password: password)
+                    alertMessage = "Sign in successful."
+                }
+                showAlert = true
+            } catch {
+                alertMessage = "Error: \(error.localizedDescription)"
+                showAlert = true
+            }
+            isLoading = false
+        }
     }
 }
 
-// MARK: - Updated MeditationView
+// Replace the ContentView_Previews struct with:
+
+struct ContentView_Previews: PreviewProvider {
+    static var previews: some View {
+        ContentView(supabaseClient: SupabaseClient(supabaseURL: Config.supabaseURL, supabaseKey: Config.supabaseKey))
+    }
+}
+
 struct MeditationView: View {
     @EnvironmentObject var settings: SettingsManager
     let onComplete: () -> Void
     @Binding var progressPercentage: Double
     
+    @State private var timeRemaining: Int
     @State private var progress: CGFloat = 0.0
     @State private var timer: Timer?
-    @State private var currentTime: Int = 0
-    @State private var audioPlayer: AVAudioPlayer?
     
-    let meditationTips = [
-        "Find a quiet, comfortable place to sit.",
-        "Close your eyes and focus on your breath.",
-        "If your mind wanders, gently bring your attention back to your breath.",
-        "Regular meditation can improve mental clarity and reduce stress."
-    ]
+    init(onComplete: @escaping () -> Void, progressPercentage: Binding<Double>) {
+        self.onComplete = onComplete
+        self._progressPercentage = progressPercentage
+        self._timeRemaining = State(initialValue: 0)
+    }
     
     var body: some View {
         VStack(spacing: 40) {
-            Spacer()
+            Text("Meditation")
+                .font(.largeTitle)
+                .fontWeight(.bold)
             
             ZStack {
                 Circle()
@@ -1627,97 +1034,52 @@ struct MeditationView: View {
                 
                 Circle()
                     .trim(from: 0, to: progress)
-                    .stroke(Color.teal, lineWidth: 15)
+                    .stroke(Color.purple, lineWidth: 15)
                     .frame(width: 250, height: 250)
                     .rotationEffect(Angle(degrees: -90))
                 
                 VStack {
-                    Text("Meditate")
-                        .font(.system(size: 36, weight: .bold))
-                        .foregroundColor(.teal)
-                    
-                    Text(timeString(from: currentTime))
+                    Text(timeString(from: timeRemaining))
                         .font(.system(size: 40, weight: .bold))
-                        .foregroundColor(.teal)
+                        .foregroundColor(.purple)
                 }
             }
             
-            Text("Focus on your breath")
-                .font(.title2)
-                .foregroundColor(.secondary)
-            
-            TipView(tips: meditationTips)
-                .padding(.horizontal)
-            
-            Spacer()
+            Button(action: {
+                timer?.invalidate()
+                onComplete()
+            }) {
+                Text("End Meditation")
+                    .font(.headline)
+                    .foregroundColor(.purple)
+                    .padding()
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 12)
+                            .stroke(Color.purple, lineWidth: 2)
+                    )
+            }
         }
         .padding()
-        .background(Color.white)
         .onAppear {
-            setupAudioSession()
-            setupAudioPlayer()
             startMeditation()
         }
         .onDisappear {
             timer?.invalidate()
-            audioPlayer?.stop()
-        }
-    }
-    
-    private func setupAudioSession() {
-        do {
-            try AVAudioSession.sharedInstance().setCategory(.playback, mode: .default)
-            try AVAudioSession.sharedInstance().setActive(true)
-        } catch {
-            print("Failed to set up audio session: \(error)")
-        }
-    }
-    
-    private func setupAudioPlayer() {
-        guard settings.meditationSoundFile != "None" else {
-            print("No sound selected")
-            return
-        }
-        
-        guard let soundURL = Bundle.main.url(forResource: settings.meditationSoundFile, withExtension: "mp3") else {
-            print("Sound file not found: \(settings.meditationSoundFile).mp3")
-            return
-        }
-        
-        do {
-            audioPlayer = try AVAudioPlayer(contentsOf: soundURL)
-            audioPlayer?.numberOfLoops = -1 // Loop indefinitely
-            audioPlayer?.prepareToPlay()
-            print("Audio player setup successfully for: \(settings.meditationSoundFile).mp3")
-        } catch {
-            print("Error setting up audio player: \(error.localizedDescription)")
         }
     }
     
     private func startMeditation() {
-        // Disable haptic feedback for meditation
-        HapticFeedback.shared.isEnabled = false
-        
-        currentTime = settings.meditationDuration
+        timeRemaining = settings.meditationDuration
         progress = 0.0
         
-        print("Starting meditation with sound: \(settings.friendlyNameForSoundFile(settings.meditationSoundFile))")
-        audioPlayer?.play()
-        
-        timer?.invalidate()
-        timer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { timer in
-            if currentTime > 0 {
-                currentTime -= 1
-                progress = 1.0 - (CGFloat(currentTime) / CGFloat(settings.meditationDuration))
-                updateProgress()
-                
-                if currentTime == 0 {
-                    timer.invalidate()
-                    audioPlayer?.stop()
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-                        onComplete()
-                    }
-                }
+        timer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { _ in
+            if timeRemaining > 0 {
+                timeRemaining -= 1
+                progress = CGFloat(settings.meditationDuration - timeRemaining) / CGFloat(settings.meditationDuration)
+                progressPercentage = Double(progress)
+            } else {
+                timer?.invalidate()
+                onComplete()
             }
         }
     }
@@ -1727,194 +1089,267 @@ struct MeditationView: View {
         let remainingSeconds = seconds % 60
         return String(format: "%02d:%02d", minutes, remainingSeconds)
     }
-    
-    private func updateProgress() {
-        let rawProgress = Double(settings.meditationDuration - currentTime) / Double(settings.meditationDuration)
-        progressPercentage = min(1.0, rawProgress)
-        if progressPercentage >= 0.95 {
-            progressPercentage = 1.0
-        }
-    }
-}
-
-// MARK: - Previews
-struct ContentView_Previews: PreviewProvider {
-    static var previews: some View {
-        ContentView()
-    }
-}
-
-// MARK: - Additional Helper Views
-struct CardView: View {
-    let title: String
-    let content: String
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            Text(title)
-                .font(.headline)
-                .foregroundColor(.white)
-            Text(content)
-                .font(.subheadline)
-                .foregroundColor(.white.opacity(0.85))
-        }
-        .padding()
-        .background(
-            LinearGradient(gradient: Gradient(colors: [Color.blue, Color.teal]), startPoint: .topLeading, endPoint: .bottomTrailing)
-        )
-        .cornerRadius(15)
-        .shadow(radius: 5)
-    }
-}
-
-struct ProgressChartView: View {
-    var body: some View {
-        RoundedRectangle(cornerRadius: 10)
-            .fill(Color.gray.opacity(0.2))
-            .overlay(
-                Text("Chart Placeholder")
-                    .foregroundColor(.gray)
-            )
-    }
-}
-
-// Add this struct after the MonthProgressView
-
-struct TutorialView: View {
-    @Environment(\.dismiss) private var dismiss
-    @Binding var showTutorial: Bool
-    @State private var currentScreenIndex = 0
-    
-    var body: some View {
-        VStack {
-            TabView(selection: $currentScreenIndex) {
-                ForEach(0..<TutorialContent.screens.count, id: \.self) { index in
-                    TutorialScreenView(screen: TutorialContent.screens[index])
-                        .tag(index)
-                }
-            }
-            .tabViewStyle(PageTabViewStyle(indexDisplayMode: .always))
-            
-            HStack {
-                if currentScreenIndex < TutorialContent.screens.count - 1 {
-                    Button("Skip") {
-                        endTutorial()
-                    }
-                    Spacer()
-                    Button("Next") {
-                        withAnimation {
-                            currentScreenIndex += 1
-                        }
-                    }
-                } else {
-                    Button("Close") {
-                        endTutorial()
-                    }
-                    .frame(maxWidth: .infinity)
-                    .padding()
-                    .background(Color.blue)
-                    .foregroundColor(.white)
-                    .cornerRadius(10)
-                }
-            }
-            .padding()
-        }
-    }
-    
-    private func endTutorial() {
-        showTutorial = false
-        dismiss()
-    }
-}
-
-struct TutorialScreenView: View {
-    let screen: TutorialScreen
-    
-    var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 20) {
-                Text(screen.title)
-                    .font(.largeTitle)
-                    .fontWeight(.bold)
-                
-                Text(screen.content)
-                    .font(.body)
-                
-                if !screen.bulletPoints.isEmpty {
-                    VStack(alignment: .leading, spacing: 10) {
-                        ForEach(screen.bulletPoints, id: \.self) { point in
-                            HStack(alignment: .top) {
-                                Image(systemName: "circle.fill")
-                                    .font(.system(size: 8))
-                                    .padding(.top, 6)
-                                Text(point)
-                            }
-                        }
-                    }
-                }
-                
-                if let proTip = screen.proTip {
-                    VStack(alignment: .leading) {
-                        Text("Pro Tip:")
-                            .font(.headline)
-                        Text(proTip)
-                            .font(.body)
-                            .italic()
-                    }
-                    .padding()
-                    .background(Color.yellow.opacity(0.2))
-                    .cornerRadius(10)
-                }
-                
-                Spacer()
-            }
-            .padding()
-        }
-    }
 }
 
 struct TipView: View {
     let tips: [String]
     @State private var currentTipIndex = 0
-    @State private var opacity = 1.0
     
     var body: some View {
-        VStack(alignment: .leading) {
-            HStack {
-                Image(systemName: "lightbulb.fill")
-                    .foregroundColor(.yellow)
-                Text("Tip:")
-                    .fontWeight(.semibold)
-            }
-            .padding(.bottom, 4)
+        VStack {
+            Text("Tip:")
+                .font(.headline)
+                .foregroundColor(.secondary)
             
             Text(tips[currentTipIndex])
-                .font(.subheadline)
-                .opacity(opacity)
-                .fixedSize(horizontal: false, vertical: true)
-                .frame(height: 60, alignment: .top)
+                .font(.body)
+                .foregroundColor(.primary)
+                .multilineTextAlignment(.center)
+                .padding()
+                .frame(height: 100)
         }
-        .padding()
-        .frame(maxWidth: .infinity)
-        .background(Color.blue.opacity(0.1))
-        .cornerRadius(10)
-        .onAppear(perform: startRotatingTips)
+        .onAppear {
+            startTipRotation()
+        }
     }
     
-    private func startRotatingTips() {
-        guard tips.count > 1 else { return }
-        
-        Timer.scheduledTimer(withTimeInterval: 8, repeats: true) { _ in
-            withAnimation(.easeInOut(duration: 0.5)) {
-                opacity = 0
-            }
-            
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+    private func startTipRotation() {
+        Timer.scheduledTimer(withTimeInterval: 10, repeats: true) { _ in
+            withAnimation {
                 currentTipIndex = (currentTipIndex + 1) % tips.count
-                withAnimation(.easeInOut(duration: 0.5)) {
-                    opacity = 1
-                }
             }
         }
     }
+}
+
+struct BreathingProgressShape: Shape {
+    var progress: CGFloat
+    var phase: BreathingPhase
+    
+    func path(in rect: CGRect) -> Path {
+        var path = Path()
+        
+        // Start at top-left corner
+        path.move(to: CGPoint(x: rect.minX, y: rect.minY))
+        
+        switch phase {
+        case .inhale:
+            path.addLine(to: CGPoint(x: rect.minX + rect.width * progress, y: rect.minY))
+        case .hold1:
+            path.addLine(to: CGPoint(x: rect.maxX, y: rect.minY))
+            path.addLine(to: CGPoint(x: rect.maxX, y: rect.minY + rect.height * progress))
+        case .exhale:
+            path.addLine(to: CGPoint(x: rect.maxX, y: rect.minY))
+            path.addLine(to: CGPoint(x: rect.maxX, y: rect.maxY))
+            path.addLine(to: CGPoint(x: rect.maxX - rect.width * progress, y: rect.maxY))
+        case .hold2:
+            path.addLine(to: CGPoint(x: rect.maxX, y: rect.minY))
+            path.addLine(to: CGPoint(x: rect.maxX, y: rect.maxY))
+            path.addLine(to: CGPoint(x: rect.minX, y: rect.maxY))
+            path.addLine(to: CGPoint(x: rect.minX, y: rect.maxY - rect.height * progress))
+        }
+        
+        return path
+    }
+}
+
+class BoxBreathingViewModel: ObservableObject {
+    @Published var currentPhase: BreathingPhase = .inhale
+    @Published var progress: CGFloat = 0.0
+    @Published var phaseTimeRemaining: Double = 0.0
+    @Published var currentRound: Int = 1
+    @Published var isComplete: Bool = false
+    @Published var isReady: Bool = false
+    
+    @Binding var progressPercentage: Double
+    
+    private var settings: SettingsManager?
+    private var timer: Timer?
+    
+    init(progressPercentage: Binding<Double>) {
+        self._progressPercentage = progressPercentage
+    }
+    
+    func updateSettings(_ settings: SettingsManager) {
+        self.settings = settings
+    }
+    
+    func startExercise() {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
+            self.isReady = true
+            self.startPhase()
+        }
+    }
+    
+    private func startPhase() {
+        phaseTimeRemaining = Double(getDuration(for: currentPhase))
+        progress = 0.0
+        
+        timer?.invalidate()
+        timer = Timer.scheduledTimer(withTimeInterval: 0.1, repeats: true) { [weak self] _ in
+            guard let self = self else { return }
+            
+            if self.phaseTimeRemaining > 0.1 {
+                self.phaseTimeRemaining -= 0.1
+                self.updateProgress()
+            } else {
+                self.moveToNextPhase()
+            }
+        }
+    }
+    
+    private func updateProgress() {
+        let totalPhaseDuration = Double(getDuration(for: currentPhase))
+        progress = CGFloat(1 - (phaseTimeRemaining / totalPhaseDuration))
+        
+        let totalDuration = Double(settings!.inhaleDuration + settings!.hold1Duration + settings!.exhaleDuration + settings!.hold2Duration)
+        let completedDuration = Double((currentRound - 1) * Int(totalDuration)) + 
+                                (totalDuration - phaseTimeRemaining - 
+                                 Double(getDuration(for: currentPhase.next())) - 
+                                 Double(getDuration(for: currentPhase.next().next())) - 
+                                 Double(getDuration(for: currentPhase.next().next().next())))
+        progressPercentage = completedDuration / Double(settings!.boxBreathingRounds * Int(totalDuration))
+    }
+    
+    private func moveToNextPhase() {
+        currentPhase = currentPhase.next()
+        
+        if currentPhase == .inhale {
+            currentRound += 1
+            if currentRound > settings!.boxBreathingRounds {
+                completeExercise()
+                return
+            }
+        }
+        
+        startPhase()
+    }
+    
+    private func completeExercise() {
+        timer?.invalidate()
+        isComplete = true
+        progressPercentage = 1.0
+    }
+    
+    private func getDuration(for phase: BreathingPhase) -> Int {
+        guard let settings = settings else { return 0 }
+        
+        switch phase {
+        case .inhale:
+            return settings.inhaleDuration
+        case .hold1:
+            return settings.hold1Duration
+        case .exhale:
+            return settings.exhaleDuration
+        case .hold2:
+            return settings.hold2Duration
+        }
+    }
+}
+
+enum BreathingPhase: String {
+    case inhale = "Inhale"
+    case hold1 = "Hold 1"
+    case exhale = "Exhale"
+    case hold2 = "Hold 2"
+    
+    func next() -> BreathingPhase {
+        switch self {
+        case .inhale: return .hold1
+        case .hold1: return .exhale
+        case .exhale: return .hold2
+        case .hold2: return .inhale
+        }
+    }
+}
+
+struct ProgressCircle: View {
+    let progress: Double
+    let color: Color
+    
+    var body: some View {
+        ZStack {
+            Circle()
+                .stroke(color.opacity(0.2), lineWidth: 10)
+            Circle()
+                .trim(from: 0, to: CGFloat(progress))
+                .stroke(color, style: StrokeStyle(lineWidth: 10, lineCap: .round))
+                .rotationEffect(.degrees(-90))
+            Text("\(Int(progress * 100))%")
+                .font(.title2)
+                .fontWeight(.bold)
+        }
+    }
+}
+
+struct ProgressRow: View {
+    let title: String
+    let progress: Double
+    let color: Color
+    
+    var body: some View {
+        HStack {
+            Text(title)
+                .font(.subheadline)
+            Spacer()
+            ProgressView(value: progress)
+                .progressViewStyle(LinearProgressViewStyle(tint: color))
+                .frame(width: 100)
+        }
+    }
+}
+
+struct DayProgressSquare: View {
+    let progress: Double
+    let isCurrentDay: Bool
+    
+    var body: some View {
+        ZStack {
+            RoundedRectangle(cornerRadius: 8)
+                .fill(colorForProgress(progress))
+                .frame(width: 35, height: 35)
+            
+            if isCurrentDay {
+                RoundedRectangle(cornerRadius: 8)
+                    .stroke(Color.blue, lineWidth: 2)
+                    .frame(width: 35, height: 35)
+            }
+        }
+    }
+    
+    private func colorForProgress(_ progress: Double) -> Color {
+        switch progress {
+        case 0:
+            return Color(UIColor.systemGray5)
+        case 0.01...0.5:
+            return .blue.opacity(0.3)
+        case 0.5...0.9:
+            return .blue.opacity(0.6)
+        case 0.9...1:
+            return .blue
+        default:
+            return Color(UIColor.systemGray5)
+        }
+    }
+}
+
+private func getDayProgress(for index: Int) -> Double {
+    // Implement logic to get progress for each day
+    // This is a placeholder implementation
+    return Double.random(in: 0...1)
+}
+
+private func getCurrentDayIndex() -> Int {
+    // Get the current day of the week (0 = Sunday, 6 = Saturday)
+    let calendar = Calendar.current
+    return calendar.component(.weekday, from: Date()) - 1
+}
+
+private func calculateStreak() -> Int {
+    // Implement logic to calculate the streak
+    // Only count days with over 50% progress
+    // This is a placeholder implementation
+    let weekProgress = (0..<7).map { getDayProgress(for: $0) }
+    let streakDays = weekProgress.prefix(while: { $0 > 0.5 }).count
+    return streakDays
 }

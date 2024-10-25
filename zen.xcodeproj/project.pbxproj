@@ -15,6 +15,11 @@
 		9096963B2C992A3000B4B435 /* zenTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9096963A2C992A3000B4B435 /* zenTests.swift */; };
 		909696452C992A3000B4B435 /* zenUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 909696442C992A3000B4B435 /* zenUITests.swift */; };
 		909696472C992A3000B4B435 /* zenUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 909696462C992A3000B4B435 /* zenUITestsLaunchTests.swift */; };
+		90C1D36B2CCC28C30036FA96 /* AuthView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 90C1D3662CCC28C30036FA96 /* AuthView.swift */; };
+		90C1D36C2CCC28C30036FA96 /* TutorialContent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 90C1D3692CCC28C30036FA96 /* TutorialContent.swift */; };
+		90C1D36D2CCC28C30036FA96 /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 90C1D3682CCC28C30036FA96 /* HomeView.swift */; };
+		90C1D36E2CCC28C30036FA96 /* UserProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 90C1D36A2CCC28C30036FA96 /* UserProfileView.swift */; };
+		90C1D36F2CCC28C30036FA96 /* Config.swift in Sources */ = {isa = PBXBuildFile; fileRef = 90C1D3672CCC28C30036FA96 /* Config.swift */; };
 		90E70A172CBC7A52008D6232 /* meditation3 2.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 90E70A112CBC7A52008D6232 /* meditation3 2.mp3 */; };
 		90E70A192CBC7A52008D6232 /* pop.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 90E70A142CBC7A52008D6232 /* pop.mp3 */; };
 		90E70A1A2CBC7A52008D6232 /* pink-noise-from-the-surface-of-the-river-195101.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 90E70A122CBC7A52008D6232 /* pink-noise-from-the-surface-of-the-river-195101.mp3 */; };
@@ -63,6 +68,11 @@
 		909696402C992A3000B4B435 /* zenUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = zenUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		909696442C992A3000B4B435 /* zenUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = zenUITests.swift; sourceTree = "<group>"; };
 		909696462C992A3000B4B435 /* zenUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = zenUITestsLaunchTests.swift; sourceTree = "<group>"; };
+		90C1D3662CCC28C30036FA96 /* AuthView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AuthView.swift"; sourceTree = "<group>"; };
+		90C1D3672CCC28C30036FA96 /* Config.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Config.swift"; sourceTree = "<group>"; };
+		90C1D3682CCC28C30036FA96 /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "HomeView.swift"; sourceTree = "<group>"; };
+		90C1D3692CCC28C30036FA96 /* TutorialContent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TutorialContent.swift"; sourceTree = "<group>"; };
+		90C1D36A2CCC28C30036FA96 /* UserProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UserProfileView.swift"; sourceTree = "<group>"; };
 		90E70A0E2CBC7A52008D6232 /* light-rain-outside-a-greenhouse-194012.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = "light-rain-outside-a-greenhouse-194012.mp3"; sourceTree = "<group>"; };
 		90E70A0F2CBC7A52008D6232 /* meditation1 2.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = "meditation1 2.mp3"; sourceTree = "<group>"; };
 		90E70A102CBC7A52008D6232 /* meditation2 2.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = "meditation2 2.mp3"; sourceTree = "<group>"; };
@@ -142,6 +152,11 @@
 		909696282C992A2D00B4B435 /* zen */ = {
 			isa = PBXGroup;
 			children = (
+				90C1D3662CCC28C30036FA96 /* AuthView.swift */,
+				90C1D3672CCC28C30036FA96 /* Config.swift */,
+				90C1D3682CCC28C30036FA96 /* HomeView.swift */,
+				90C1D3692CCC28C30036FA96 /* TutorialContent.swift */,
+				90C1D36A2CCC28C30036FA96 /* UserProfileView.swift */,
 				90F7810D2C9B637600C7148F /* Sound */,
 				90F7810C2C9B4ECC00C7148F /* Info.plist */,
 				909696292C992A2D00B4B435 /* zenApp.swift */,
@@ -346,6 +361,11 @@
 			buildActionMask = 2147483647;
 			files = (
 				9096962C2C992A2D00B4B435 /* ContentView.swift in Sources */,
+				90C1D36B2CCC28C30036FA96 /* AuthView.swift in Sources */,
+				90C1D36C2CCC28C30036FA96 /* TutorialContent.swift in Sources */,
+				90C1D36D2CCC28C30036FA96 /* HomeView.swift in Sources */,
+				90C1D36E2CCC28C30036FA96 /* UserProfileView.swift in Sources */,
+				90C1D36F2CCC28C30036FA96 /* Config.swift in Sources */,
 				9096962A2C992A2D00B4B435 /* zenApp.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

@@ -1,19 +1,14 @@
 import SwiftUI
 
-struct UserProfileView: View {
+struct HomeView: View {
     @EnvironmentObject var supabaseManager: SupabaseManager
     
     var body: some View {
         VStack {
-            Text("User Profile")
+            Text("Welcome to AlphaFlow")
                 .font(.largeTitle)
             
-            if let user = supabaseManager.currentUser {
-                Text("Email: \(user.email ?? "N/A")")
-                // Add more user details as needed
-            } else {
-                Text("No user logged in")
-            }
+            // Add your main app content here
             
             Button("Sign Out") {
                 Task {

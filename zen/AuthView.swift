@@ -19,31 +19,17 @@ struct AuthView: View {
                 .textFieldStyle(RoundedBorderTextFieldStyle())
                 .autocapitalization(.none)
                 .keyboardType(.emailAddress)
-                .padding(.horizontal)
             
             SecureField("Password", text: $password)
                 .textFieldStyle(RoundedBorderTextFieldStyle())
-                .padding(.horizontal)
             
             Button(action: performAction) {
-                if isLoading {
-                    ProgressView()
-                        .progressViewStyle(CircularProgressViewStyle(tint: .white))
-                } else {
-                    Text(isSignUp ? "Sign Up" : "Sign In")
-                }
+                Text(isSignUp ? "Sign Up" : "Sign In")
             }
-            .frame(maxWidth: .infinity)
-            .padding()
-            .background(Color.blue)
-            .foregroundColor(.white)
-            .cornerRadius(10)
-            .padding(.horizontal)
             .disabled(email.isEmpty || password.isEmpty || isLoading)
             
             Button(action: { isSignUp.toggle() }) {
                 Text(isSignUp ? "Already have an account? Sign In" : "Don't have an account? Sign Up")
-                    .foregroundColor(.blue)
             }
         }
         .padding()

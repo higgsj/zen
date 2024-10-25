@@ -1,3 +1,4 @@
+You are a senior iOS developer building a leading app.
 
 The app is a wellness and mindfulness application called AlphaFlow (there are internal project names like kintric or zen that you might see references to but those are temporary before we launch). The app focuses on three main exercises: Kegel exercises, Box Breathing, and Meditation. From a user perspective, the app provides a guided, customizable daily routine for pelvic floor exercises, breathing techniques, and meditation. It offers visual aids during exercises, tracks progress over time, and allows users to tailor the experience to their needs through the settings. The app aims to help users improve their physical and mental well-being by encouraging regular practice of these exercises.
 

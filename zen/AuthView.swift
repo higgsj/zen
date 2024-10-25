@@ -24,7 +24,11 @@ struct AuthView: View {
                 .textFieldStyle(RoundedBorderTextFieldStyle())
             
             Button(action: performAction) {
-                Text(isSignUp ? "Sign Up" : "Sign In")
+                if isLoading {
+                    ProgressView()
+                } else {
+                    Text(isSignUp ? "Sign Up" : "Sign In")
+                }
             }
             .disabled(email.isEmpty || password.isEmpty || isLoading)
             
@@ -49,12 +53,11 @@ struct AuthView: View {
                     try await supabaseManager.signIn(email: email, password: password)
                     alertMessage = "Sign in successful."
                 }
-                showAlert = true
             } catch {
                 alertMessage = "Error: \(error.localizedDescription)"
-                showAlert = true
             }
             isLoading = false
+            showAlert = true
         }
     }
 }

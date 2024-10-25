@@ -26,13 +26,9 @@ class SupabaseManager: ObservableObject {
     
     init() {
         client = SupabaseClient(supabaseURL: Config.supabaseURL, supabaseKey: Config.supabaseKey)
-        
-        Task {
-            await checkSession()
-        }
     }
     
-    private func checkSession() async {
+    func refreshSession() async throws {
         do {
             let session = try await client.auth.session
             await MainActor.run {
@@ -40,6 +36,7 @@ class SupabaseManager: ObservableObject {
             }
         } catch {
             print("Error fetching session: \(error)")
+            throw error
         }
     }
     

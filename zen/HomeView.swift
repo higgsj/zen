@@ -62,7 +62,6 @@ struct HomeTabView: View {
             }
             .padding()
             
-            // Add motivational card here
             Text("Motivational message of the day")
                 .padding()
                 .background(Color.gray.opacity(0.2))
@@ -77,51 +76,112 @@ struct ExercisesTabView: View {
             Text("Daily Exercises")
                 .font(.largeTitle)
             
-            ExerciseCard(title: "Kegel Exercise", description: "Strengthen your pelvic floor muscles")
-            ExerciseCard(title: "Box Breathing", description: "Control your breath, control your mind")
-            ExerciseCard(title: "Meditation", description: "Find your inner peace and focus")
+            ExerciseCard(exercise: .kegel)
+            ExerciseCard(exercise: .boxBreathing)
+            ExerciseCard(exercise: .meditation)
         }
     }
 }
 
 struct ExerciseCard: View {
-    let title: String
-    let description: String
+    let exercise: ExerciseType
+    @StateObject private var timer: ExerciseTimer
+    
+    init(exercise: ExerciseType) {
+        self.exercise = exercise
+        let settings = ExerciseSettings()
+        _timer = StateObject(wrappedValue: ExerciseTimer(type: exercise, settings: settings))
+    }
     
     var body: some View {
         VStack {
-            Text(title)
+            Text(exercise.rawValue)
                 .font(.headline)
-            Text(description)
-                .font(.subheadline)
+            
+            Button(action: {
+                if timer.isActive {
+                    timer.stop()
+                } else {
+                    timer.start()
+                }
+            }) {
+                Text(timer.isActive ? "Stop" : "Start")
+            }
+            
+            Text(String(format: "%.1f", timer.timeRemaining))
         }
         .padding()
-        .background(Color.blue.opacity(0.1))
+        .background(Color.gray.opacity(0.2))
         .cornerRadius(10)
-        .padding(.horizontal)
     }
 }
 
 struct ProgressTabView: View {
     var body: some View {
         Text("Progress View")
-        // Implement progress tracking as described in app info
     }
 }
 
 struct SettingsTabView: View {
+    @AppStorage("exerciseSettings") private var exerciseSettingsData: Data = Data()
+    @State private var settings = ExerciseSettings()
+    
     var body: some View {
-        Text("Settings View")
-        // Implement settings as described in app info
+        NavigationView {
+            Form {
+                Section(header: Text("Kegel Exercise")) {
+                    Stepper("Contract Duration: \(Int(settings.kegelContractDuration))s", value: $settings.kegelContractDuration, in: 1...30)
+                    Stepper("Relax Duration: \(Int(settings.kegelRelaxDuration))s", value: $settings.kegelRelaxDuration, in: 1...30)
+                    Stepper("Rounds: \(settings.kegelRounds)", value: $settings.kegelRounds, in: 1...50)
+                }
+                
+                Section(header: Text("Box Breathing")) {
+                    Stepper("Inhale Duration: \(Int(settings.boxBreathingInhaleDuration))s", value: $settings.boxBreathingInhaleDuration, in: 1...10)
+                    Stepper("Hold Inhale Duration: \(Int(settings.boxBreathingHoldInhaleDuration))s", value: $settings.boxBreathingHoldInhaleDuration, in: 1...10)
+                    Stepper("Exhale Duration: \(Int(settings.boxBreathingExhaleDuration))s", value: $settings.boxBreathingExhaleDuration, in: 1...10)
+                    Stepper("Hold Exhale Duration: \(Int(settings.boxBreathingHoldExhaleDuration))s", value: $settings.boxBreathingHoldExhaleDuration, in: 1...10)
+                    Stepper("Rounds: \(settings.boxBreathingRounds)", value: $settings.boxBreathingRounds, in: 1...20)
+                }
+                
+                Section(header: Text("Meditation")) {
+                    Stepper("Duration: \(Int(settings.meditationDuration)) minutes", value: $settings.meditationDuration, in: 1...60)
+                }
+            }
+            .navigationTitle("Exercise Settings")
+        }
+        .onAppear(perform: loadSettings)
+        .onChange(of: settings) { _, newValue in  // Updated syntax for iOS 17
+            saveSettings()
+        }
+    }
+    
+    func loadSettings() {
+        if let decodedSettings = try? JSONDecoder().decode(ExerciseSettings.self, from: exerciseSettingsData) {
+            settings = decodedSettings
+        }
+    }
+    
+    func saveSettings() {
+        if let encodedSettings = try? JSONEncoder().encode(settings) {
+            exerciseSettingsData = encodedSettings
+        }
     }
 }
 
 struct SessionView: View {
     @Binding var isSessionActive: Bool
     @State private var currentExercise: ExerciseType = .kegel
-    @StateObject private var exerciseTimer = ExerciseTimer(duration: 0)
+    @StateObject private var exerciseTimer: ExerciseTimer
     @State private var sessionStart: Date?
     @State private var exerciseDurations: [ExerciseType: TimeInterval] = [:]
+    @AppStorage("exerciseSettings") private var exerciseSettingsData: Data = Data()
+    @State private var settings = ExerciseSettings()
+    
+    init(isSessionActive: Binding<Bool>) {
+        self._isSessionActive = isSessionActive
+        let settings = ExerciseSettings()
+        _exerciseTimer = StateObject(wrappedValue: ExerciseTimer(type: .kegel, settings: settings))
+    }
     
     var body: some View {
         ZStack {
@@ -140,15 +200,17 @@ struct SessionView: View {
                 
                 Spacer()
                 
-                Button(action: nextExercise) {
-                    Text(currentExercise == .meditation ? "Finish Session" : "Next Exercise")
+                Button(action: {
+                    exerciseTimer.stop()
+                    isSessionActive = false
+                }) {
+                    Text("End Session")
                         .font(.headline)
                         .foregroundColor(.black)
                         .padding()
                         .frame(maxWidth: .infinity)
                         .background(Color.white)
                         .cornerRadius(15)
-                        .shadow(radius: 5)
                 }
                 .padding(.horizontal)
                 .padding(.bottom, 30)
@@ -156,43 +218,54 @@ struct SessionView: View {
         }
         .onAppear(perform: startSession)
         .onDisappear(perform: endSession)
+        .onReceive(NotificationCenter.default.publisher(for: .exerciseComplete)) { notification in
+            if let exerciseType = notification.userInfo?["exerciseType"] as? ExerciseType {
+                handleExerciseCompletion(exerciseType)
+            }
+        }
     }
     
     private func startSession() {
         sessionStart = Date()
+        loadSettings()
         startExercise()
     }
     
-    private func startExercise() {
-        switch currentExercise {
-        case .kegel:
-            exerciseTimer.reset(duration: 300) // 5 minutes
-        case .boxBreathing:
-            exerciseTimer.reset(duration: 300) // 5 minutes
-        case .meditation:
-            exerciseTimer.reset(duration: 600) // 10 minutes
+    private func loadSettings() {
+        if let decodedSettings = try? JSONDecoder().decode(ExerciseSettings.self, from: exerciseSettingsData) {
+            settings = decodedSettings
         }
+    }
+    
+    private func startExercise() {
+        exerciseTimer.reset()
+        exerciseTimer.updateSettings(type: currentExercise, settings: settings)
         exerciseTimer.start()
     }
     
-    private func nextExercise() {
-        exerciseDurations[currentExercise] = 300 - exerciseTimer.timeRemaining
-        exerciseTimer.stop()
+    private func handleExerciseCompletion(_ completedExercise: ExerciseType) {
+        print("Handling completion for: \(completedExercise)")  // Debug print
+        print("Current exercise durations: \(exerciseDurations)")  // Debug print
         
-        switch currentExercise {
+        exerciseDurations[completedExercise] = exerciseTimer.totalDuration - exerciseTimer.timeRemaining
+        
+        switch completedExercise {
         case .kegel:
+            print("Transitioning from Kegel to Box Breathing")  // Debug print
             currentExercise = .boxBreathing
             startExercise()
         case .boxBreathing:
+            print("Transitioning from Box Breathing to Meditation")  // Debug print
             currentExercise = .meditation
             startExercise()
         case .meditation:
+            print("Completing session")  // Debug print
             endSession()
         }
     }
     
     private func endSession() {
-        exerciseDurations[currentExercise] = 300 - exerciseTimer.timeRemaining
+        exerciseDurations[currentExercise] = exerciseTimer.totalDuration - exerciseTimer.timeRemaining
         let session = ExerciseSession(
             date: sessionStart ?? Date(),
             kegelDuration: exerciseDurations[.kegel] ?? 0,
@@ -200,10 +273,7 @@ struct SessionView: View {
             meditationDuration: exerciseDurations[.meditation] ?? 0
         )
         
-        // Here, instead of saving to Supabase, you might want to save locally or use another service
-        // For now, we'll just print the session data
         print("Session completed: \(session)")
-        
         isSessionActive = false
     }
 }
@@ -219,36 +289,16 @@ struct ExerciseView: View {
                 .fontWeight(.bold)
                 .foregroundColor(.white)
             
-            ZStack {
-                Circle()
-                    .stroke(lineWidth: 20)
-                    .opacity(0.3)
-                    .foregroundColor(.gray)
-                
-                Circle()
-                    .trim(from: 0.0, to: CGFloat(1 - (timer.timeRemaining / 300)))
-                    .stroke(style: StrokeStyle(lineWidth: 20, lineCap: .round, lineJoin: .round))
-                    .foregroundColor(.white)
-                    .rotationEffect(Angle(degrees: 270.0))
-                    .animation(.linear, value: timer.timeRemaining)
-                
-                VStack {
-                    Text(timer.currentPhase)
-                        .font(.headline)
-                        .foregroundColor(.white)
-                    Text(String(format: "%02d:%02d", Int(timer.timeRemaining) / 60, Int(timer.timeRemaining) % 60))
-                        .font(.largeTitle)
-                        .fontWeight(.bold)
-                        .foregroundColor(.white)
-                }
+            switch exerciseType {
+            case .kegel:
+                KegelExerciseView(timer: timer)
+            case .boxBreathing:
+                BoxBreathingView(timer: timer)
+            case .meditation:
+                DefaultExerciseView(timer: timer)
             }
-            .frame(width: 250, height: 250)
             
             exerciseInstructions
-        }
-        .onAppear(perform: updateExercisePhase)
-        .onChange(of: timer.timeRemaining) { oldValue, newValue in
-            updateExercisePhase()
         }
     }
     
@@ -268,21 +318,201 @@ struct ExerciseView: View {
         .multilineTextAlignment(.center)
         .padding()
     }
+}
+
+struct KegelExerciseView: View {
+    @ObservedObject var timer: ExerciseTimer
     
-    private func updateExercisePhase() {
-        switch exerciseType {
-        case .kegel:
-            timer.currentPhase = timer.timeRemaining.truncatingRemainder(dividingBy: 10) < 5 ? "Contract" : "Relax"
-        case .boxBreathing:
-            let phase = Int(timer.timeRemaining.truncatingRemainder(dividingBy: 16))
-            switch phase {
-            case 0...3: timer.currentPhase = "Inhale"
-            case 4...7: timer.currentPhase = "Hold"
-            case 8...11: timer.currentPhase = "Exhale"
-            default: timer.currentPhase = "Hold"
+    var body: some View {
+        VStack(spacing: 20) {
+            Text("Rounds Remaining: \(timer.roundsRemaining)")
+                .font(.headline)
+                .foregroundColor(.white)
+            
+            ZStack {
+                Circle()
+                    .stroke(lineWidth: 20)
+                    .opacity(0.3)
+                    .foregroundColor(.gray)
+                
+                Circle()
+                    .trim(from: 0.0, to: CGFloat(timer.phaseProgress))
+                    .stroke(style: StrokeStyle(lineWidth: 20, lineCap: .round, lineJoin: .round))
+                    .foregroundColor(.white)
+                    .rotationEffect(Angle(degrees: 270.0))
+                    // Remove the animation modifier here since the animation is handled
+                    // by the ExerciseTimer's phaseProgress updates
+                
+                VStack {
+                    Text(timer.currentPhase)
+                        .font(.headline)
+                        .foregroundColor(.white)
+                    Text("\(timer.displayTimeRemaining)")
+                        .font(.largeTitle)
+                        .fontWeight(.bold)
+                        .foregroundColor(.white)
+                }
             }
-        case .meditation:
-            timer.currentPhase = "Meditate"
+            .frame(width: 250, height: 250)
         }
     }
 }
+
+struct DefaultExerciseView: View {
+    @ObservedObject var timer: ExerciseTimer
+    
+    var body: some View {
+        VStack(spacing: 20) {
+            Text(timer.currentPhase)
+                .font(.headline)
+                .foregroundColor(.white)
+            
+            ZStack {
+                Circle()
+                    .stroke(lineWidth: 20)
+                    .opacity(0.3)
+                    .foregroundColor(.gray)
+                
+                Circle()
+                    .trim(from: 0.0, to: CGFloat(timer.progress))
+                    .stroke(style: StrokeStyle(lineWidth: 20, lineCap: .round, lineJoin: .round))
+                    .foregroundColor(.white)
+                    .rotationEffect(Angle(degrees: 270.0))
+                    .animation(.linear, value: timer.progress)
+                
+                VStack {
+                    Text(timer.currentPhase)
+                        .font(.headline)
+                        .foregroundColor(.white)
+                    Text(String(format: "%02d:%02d", Int(timer.timeRemaining) / 60, Int(timer.timeRemaining) % 60))
+                        .font(.largeTitle)
+                        .fontWeight(.bold)
+                        .foregroundColor(.white)
+                }
+            }
+            .frame(width: 250, height: 250)
+        }
+    }
+}
+
+// Update BoxBreathingView to include accumulated progress
+struct BoxBreathingView: View {
+    @ObservedObject var timer: ExerciseTimer
+    
+    var body: some View {
+        VStack(spacing: 20) {
+            Text("Rounds Remaining: \(timer.roundsRemaining)")
+                .font(.headline)
+                .foregroundColor(.white)
+            
+            ZStack {
+                // Static square outline
+                SquareOutline()
+                    .stroke(Color.gray.opacity(0.3), lineWidth: 20)
+                    .frame(width: 250, height: 250)
+                
+                // Accumulated progress lines
+                AccumulatedBoxProgress(currentPhase: timer.currentPhase, 
+                                    phaseProgress: timer.phaseProgress,
+                                    currentPhaseIndex: getPhaseIndex(timer.currentPhase))
+                    .stroke(Color.white, lineWidth: 20)
+                    .frame(width: 250, height: 250)
+                
+                // Center text
+                VStack {
+                    Text(timer.currentPhase)
+                        .font(.headline)
+                        .foregroundColor(.white)
+                    Text("\(timer.displayTimeRemaining)")
+                        .font(.largeTitle)
+                        .fontWeight(.bold)
+                        .foregroundColor(.white)
+                }
+            }
+            .frame(width: 250, height: 250)
+        }
+    }
+    
+    // Helper function to get phase index since we can't access timer.phases directly
+    private func getPhaseIndex(_ phase: String) -> Int {
+        let phases = ["Inhale", "Hold Inhale", "Exhale", "Hold Exhale"]
+        return phases.firstIndex(of: phase) ?? 0
+    }
+}
+
+// Square outline shape
+struct SquareOutline: Shape {
+    func path(in rect: CGRect) -> Path {
+        var path = Path()
+        path.move(to: CGPoint(x: 0, y: rect.height))
+        path.addLine(to: CGPoint(x: rect.width, y: rect.height))
+        path.addLine(to: CGPoint(x: rect.width, y: 0))
+        path.addLine(to: CGPoint(x: 0, y: 0))
+        path.addLine(to: CGPoint(x: 0, y: rect.height))
+        return path
+    }
+}
+
+// New shape to handle accumulated progress
+struct AccumulatedBoxProgress: Shape {
+    let currentPhase: String
+    let phaseProgress: Double
+    let currentPhaseIndex: Int
+    
+    func path(in rect: CGRect) -> Path {
+        var path = Path()
+        
+        // Draw completed phases
+        for phase in 0..<currentPhaseIndex {
+            drawCompletedPhase(phase: phase, in: rect, path: &path)
+        }
+        
+        // Draw current phase progress
+        drawCurrentPhase(in: rect, path: &path)
+        
+        return path
+    }
+    
+    private func drawCompletedPhase(phase: Int, in rect: CGRect, path: inout Path) {
+        switch phase {
+        case 0: // Inhale (top)
+            path.move(to: CGPoint(x: 0, y: 0))
+            path.addLine(to: CGPoint(x: rect.width, y: 0))
+        case 1: // Hold Inhale (right)
+            path.move(to: CGPoint(x: rect.width, y: 0))
+            path.addLine(to: CGPoint(x: rect.width, y: rect.height))
+        case 2: // Exhale (bottom)
+            path.move(to: CGPoint(x: rect.width, y: rect.height))
+            path.addLine(to: CGPoint(x: 0, y: rect.height))
+        case 3: // Hold Exhale (left)
+            path.move(to: CGPoint(x: 0, y: rect.height))
+            path.addLine(to: CGPoint(x: 0, y: 0))
+        default:
+            break
+        }
+    }
+    
+    private func drawCurrentPhase(in rect: CGRect, path: inout Path) {
+        switch currentPhase {
+        case "Inhale": // Top edge
+            path.move(to: CGPoint(x: 0, y: 0))
+            path.addLine(to: CGPoint(x: rect.width * phaseProgress, y: 0))
+            
+        case "Hold Inhale": // Right edge
+            path.move(to: CGPoint(x: rect.width, y: 0))
+            path.addLine(to: CGPoint(x: rect.width, y: rect.height * phaseProgress))
+            
+        case "Exhale": // Bottom edge
+            path.move(to: CGPoint(x: rect.width, y: rect.height))
+            path.addLine(to: CGPoint(x: rect.width * (1 - phaseProgress), y: rect.height))
+            
+        case "Hold Exhale": // Left edge
+            path.move(to: CGPoint(x: 0, y: rect.height))
+            path.addLine(to: CGPoint(x: 0, y: rect.height * (1 - phaseProgress)))
+            
+        default:
+            break
+        }
+    }
+}
+

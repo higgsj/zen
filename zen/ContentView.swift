@@ -20,12 +20,13 @@ struct ContentView: View {
                     Text("Loading...")
                 }
                 .onAppear { print("Showing loading view") }
-            } else if let error = error {
-                Text("Error: \(error.localizedDescription)")
-                    .onAppear { print("Showing error view: \(error.localizedDescription)") }
             } else if supabaseManager.currentUser != nil {
                 HomeView()
                     .onAppear { print("Showing HomeView for user: \(supabaseManager.currentUser?.email ?? "Unknown")") }
+            } else if let error = error, !isSecItemNotFoundError(error) {
+                // Only show error view for non-keychain errors
+                Text("Error: \(error.localizedDescription)")
+                    .onAppear { print("Showing error view: \(error.localizedDescription)") }
             } else {
                 AuthView()
                     .onAppear { print("Showing AuthView") }
@@ -38,13 +39,19 @@ struct ContentView: View {
                     print("Refreshing session...")
                     try await supabaseManager.refreshSession()
                     print("Session refreshed successfully")
-                    isLoading = false
                 } catch {
-                    print("Error refreshing session: \(error.localizedDescription)")
+                    print("Session refresh result: \(error.localizedDescription)")
                     self.error = error
-                    isLoading = false
                 }
+                isLoading = false
             }
         }
+    }
+    
+    private func isSecItemNotFoundError(_ error: Error) -> Bool {
+        let nsError = error as NSError
+        // Check both the error description and the underlying error code
+        return nsError.localizedDescription.contains("errSecItemNotFound") ||
+               (nsError.domain == "Security" && nsError.code == -25300)
     }
 }

@@ -125,6 +125,8 @@ struct ProgressTabView: View {
 struct SettingsTabView: View {
     @AppStorage("exerciseSettings") private var exerciseSettingsData: Data = Data()
     @State private var settings = ExerciseSettings()
+    @EnvironmentObject var supabaseManager: SupabaseManager
+    @State private var showSignOutAlert = false
     
     var body: some View {
         NavigationView {
@@ -146,11 +148,37 @@ struct SettingsTabView: View {
                 Section(header: Text("Meditation")) {
                     Stepper("Duration: \(Int(settings.meditationDuration)) minutes", value: $settings.meditationDuration, in: 1...60)
                 }
+                
+                Section {
+                    Button(action: { showSignOutAlert = true }) {
+                        HStack {
+                            Text("Sign Out")
+                                .foregroundColor(.red)
+                            Spacer()
+                            Image(systemName: "arrow.right.square")
+                                .foregroundColor(.red)
+                        }
+                    }
+                }
             }
-            .navigationTitle("Exercise Settings")
+            .navigationTitle("Settings")
+            .alert("Sign Out", isPresented: $showSignOutAlert) {
+                Button("Cancel", role: .cancel) { }
+                Button("Sign Out", role: .destructive) {
+                    Task {
+                        do {
+                            try await supabaseManager.signOut()
+                        } catch {
+                            print("Error signing out: \(error)")
+                        }
+                    }
+                }
+            } message: {
+                Text("Are you sure you want to sign out?")
+            }
         }
         .onAppear(perform: loadSettings)
-        .onChange(of: settings) { _, newValue in  // Updated syntax for iOS 17
+        .onChange(of: settings) { _, newValue in
             saveSettings()
         }
     }
@@ -200,17 +228,33 @@ struct SessionView: View {
                 
                 Spacer()
                 
-                Button(action: {
-                    exerciseTimer.stop()
-                    isSessionActive = false
-                }) {
-                    Text("End Session")
-                        .font(.headline)
-                        .foregroundColor(.black)
-                        .padding()
-                        .frame(maxWidth: .infinity)
-                        .background(Color.white)
-                        .cornerRadius(15)
+                HStack(spacing: 20) {
+                    // End Session Button
+                    Button(action: {
+                        exerciseTimer.stop()
+                        isSessionActive = false
+                    }) {
+                        Text("End Session")
+                            .font(.headline)
+                            .foregroundColor(.black)
+                            .padding()
+                            .frame(maxWidth: .infinity)
+                            .background(Color.white)
+                            .cornerRadius(15)
+                    }
+                    
+                    // Next Exercise Button - Only show if not on last exercise
+                    if currentExercise != .meditation {
+                        Button(action: moveToNextExercise) {
+                            Text("Next Exercise")
+                                .font(.headline)
+                                .foregroundColor(.black)
+                                .padding()
+                                .frame(maxWidth: .infinity)
+                                .background(Color.white)
+                                .cornerRadius(15)
+                        }
+                    }
                 }
                 .padding(.horizontal)
                 .padding(.bottom, 30)
@@ -243,29 +287,46 @@ struct SessionView: View {
         exerciseTimer.start()
     }
     
+    private func moveToNextExercise() {
+        // Store current exercise duration
+        exerciseDurations[currentExercise] = exerciseTimer.totalDuration - exerciseTimer.timeRemaining
+        
+        // Determine next exercise
+        switch currentExercise {
+        case .kegel:
+            currentExercise = .boxBreathing
+        case .boxBreathing:
+            currentExercise = .meditation
+        case .meditation:
+            endSession()
+            return
+        }
+        
+        // Start the next exercise
+        startExercise()
+    }
+    
     private func handleExerciseCompletion(_ completedExercise: ExerciseType) {
-        print("Handling completion for: \(completedExercise)")  // Debug print
-        print("Current exercise durations: \(exerciseDurations)")  // Debug print
+        print("Exercise completed: \(completedExercise)")
+        exerciseDurations[completedExercise] = exerciseTimer.totalDuration
         
-        exerciseDurations[completedExercise] = exerciseTimer.totalDuration - exerciseTimer.timeRemaining
-        
+        // Automatically move to next exercise if available
         switch completedExercise {
         case .kegel:
-            print("Transitioning from Kegel to Box Breathing")  // Debug print
             currentExercise = .boxBreathing
             startExercise()
         case .boxBreathing:
-            print("Transitioning from Box Breathing to Meditation")  // Debug print
             currentExercise = .meditation
             startExercise()
         case .meditation:
-            print("Completing session")  // Debug print
             endSession()
         }
     }
     
     private func endSession() {
+        // Store final exercise duration if not already stored
         exerciseDurations[currentExercise] = exerciseTimer.totalDuration - exerciseTimer.timeRemaining
+        
         let session = ExerciseSession(
             date: sessionStart ?? Date(),
             kegelDuration: exerciseDurations[.kegel] ?? 0,
@@ -274,7 +335,6 @@ struct SessionView: View {
         )
         
         print("Session completed: \(session)")
-        isSessionActive = false
     }
 }
 

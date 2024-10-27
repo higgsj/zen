@@ -11,6 +11,11 @@ import Supabase
 @main
 struct zenApp: App {
     @StateObject private var supabaseManager = SupabaseManager()
+    
+    init() {
+        // Suppress keyboard layout constraint warnings
+        UserDefaults.standard.setValue(false, forKey: "_UIConstraintBasedLayoutLogUnsatisfiable")
+    }
 
     var body: some Scene {
         WindowGroup {

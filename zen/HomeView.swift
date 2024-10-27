@@ -45,27 +45,175 @@ struct HomeView: View {
 
 struct HomeTabView: View {
     @Binding var isSessionActive: Bool
+    @State private var showingTutorial = false
+    
+    var body: some View {
+        ScrollView {
+            VStack(spacing: 24) {
+                // App Title
+                HStack(spacing: 0) {
+                    Text("ALPHA")
+                        .font(.largeTitle)
+                        .fontWeight(.bold)
+                    Text("flow")
+                        .font(.largeTitle)
+                        .italic()
+                }
+                .padding(.top, 40)
+                
+                // Hero Box with Exercise Types
+                VStack(spacing: 16) {
+                    Text("Daily Practices")
+                        .font(.headline)
+                        .foregroundColor(.gray)
+                    
+                    HStack(spacing: 20) {
+                        ExerciseIconView(
+                            icon: "🌵",  // Using cactus emoji
+                            title: "Kegel",
+                            color: .green,
+                            isSystemIcon: false
+                        )
+                        
+                        ExerciseIconView(
+                            icon: "wind",  // Using wind as placeholder for lungs
+                            title: "Breathing",
+                            color: .blue
+                        )
+                        
+                        ExerciseIconView(
+                            icon: "brain.head.profile",  // Using brain icon
+                            title: "Meditation",
+                            color: .purple
+                        )
+                    }
+                    
+                    Button(action: {
+                        isSessionActive = true
+                    }) {
+                        Text("Start Today's Session")
+                            .font(.headline)
+                            .foregroundColor(.white)
+                            .frame(maxWidth: .infinity)
+                            .padding()
+                            .background(Color.blue)
+                            .cornerRadius(15)
+                    }
+                }
+                .padding(20)
+                .background(Color(.systemBackground))
+                .cornerRadius(20)
+                .shadow(radius: 5)
+                .padding(.horizontal)
+                
+                // Weekly Progress Section
+                VStack(alignment: .leading, spacing: 16) {
+                    Text("Weekly Progress")
+                        .font(.headline)
+                        .padding(.horizontal)
+                    
+                    WeeklyProgressView()
+                }
+                .padding(.vertical)
+                
+                // Tutorial Section
+                VStack(spacing: 16) {
+                    TutorialCardView(
+                        title: "Learn More About These Practices",
+                        showingTutorial: $showingTutorial
+                    )
+                }
+                .padding(.horizontal)
+                
+                Spacer(minLength: 50)
+            }
+        }
+        .background(Color(.systemGroupedBackground))
+    }
+}
+
+struct ExerciseIconView: View {
+    let icon: String
+    let title: String
+    let color: Color
+    var isSystemIcon: Bool = true
     
     var body: some View {
         VStack {
-            Text("Welcome to AlphaFlow")
-                .font(.largeTitle)
+            Circle()
+                .fill(color.opacity(0.2))
+                .frame(width: 60, height: 60)
+                .overlay(
+                    Group {
+                        if isSystemIcon {
+                            Image(systemName: icon)
+                                .font(.system(size: 30))
+                                .foregroundColor(color)
+                        } else {
+                            Text(icon)
+                                .font(.system(size: 30))
+                        }
+                    }
+                )
             
-            Button(action: {
-                isSessionActive = true
-            }) {
-                Text("Start Today's Session")
-                    .padding()
-                    .background(Color.blue)
-                    .foregroundColor(.white)
-                    .cornerRadius(10)
+            Text(title)
+                .font(.subheadline)
+                .foregroundColor(.primary)
+        }
+    }
+}
+
+struct WeeklyProgressView: View {
+    let daysOfWeek = ["S", "M", "T", "W", "T", "F", "S"]
+    // Mock data - replace with actual progress data
+    let progress: [Bool] = [true, true, false, true, false, false, false]
+    
+    var body: some View {
+        HStack(spacing: 12) {
+            ForEach(0..<7) { index in
+                VStack(spacing: 8) {
+                    Circle()
+                        .fill(progress[index] ? Color.green : Color.gray.opacity(0.3))
+                        .frame(width: 30, height: 30)
+                    
+                    Text(daysOfWeek[index])
+                        .font(.caption)
+                        .foregroundColor(.gray)
+                }
+            }
+        }
+        .padding()
+        .background(Color(.systemBackground))
+        .cornerRadius(15)
+        .padding(.horizontal)
+    }
+}
+
+struct TutorialCardView: View {
+    let title: String
+    @Binding var showingTutorial: Bool
+    
+    var body: some View {
+        Button(action: {
+            showingTutorial = true
+        }) {
+            HStack {
+                Text(title)
+                    .font(.headline)
+                    .foregroundColor(.primary)
+                
+                Spacer()
+                
+                Image(systemName: "chevron.right")
+                    .foregroundColor(.gray)
             }
             .padding()
-            
-            Text("Motivational message of the day")
-                .padding()
-                .background(Color.gray.opacity(0.2))
-                .cornerRadius(10)
+            .frame(maxWidth: .infinity)
+            .background(Color(.systemBackground))
+            .cornerRadius(15)
+        }
+        .sheet(isPresented: $showingTutorial) {
+            TutorialView(screens: TutorialContent.screens)
         }
     }
 }
@@ -572,6 +720,81 @@ struct AccumulatedBoxProgress: Shape {
             
         default:
             break
+        }
+    }
+}
+
+struct TutorialView: View {
+    @Environment(\.dismiss) private var dismiss
+    let screens: [TutorialScreen]
+    @State private var currentScreen = 0
+    
+    var body: some View {
+        NavigationView {
+            VStack(spacing: 20) {
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 24) {
+                        Text(screens[currentScreen].title)
+                            .font(.title)
+                            .fontWeight(.bold)
+                        
+                        Text(screens[currentScreen].content)
+                            .font(.body)
+                        
+                        VStack(alignment: .leading, spacing: 12) {
+                            ForEach(screens[currentScreen].bulletPoints, id: \.self) { point in
+                                HStack(alignment: .top) {
+                                    Image(systemName: "circle.fill")
+                                        .font(.system(size: 8))
+                                        .padding(.top, 6)
+                                    Text(point)
+                                }
+                            }
+                        }
+                        
+                        if let proTip = screens[currentScreen].proTip {
+                            VStack(alignment: .leading) {
+                                Text("Pro Tip")
+                                    .font(.headline)
+                                Text(proTip)
+                                    .font(.body)
+                            }
+                            .padding()
+                            .background(Color.blue.opacity(0.1))
+                            .cornerRadius(10)
+                        }
+                    }
+                    .padding()
+                }
+                
+                HStack {
+                    if currentScreen > 0 {
+                        Button("Previous") {
+                            withAnimation {
+                                currentScreen -= 1
+                            }
+                        }
+                    }
+                    
+                    Spacer()
+                    
+                    if currentScreen < screens.count - 1 {
+                        Button("Next") {
+                            withAnimation {
+                                currentScreen += 1
+                            }
+                        }
+                    } else {
+                        Button("Done") {
+                            dismiss()
+                        }
+                    }
+                }
+                .padding()
+            }
+            .navigationBarItems(trailing: Button("Close") {
+                dismiss()
+            })
         }
     }
 }

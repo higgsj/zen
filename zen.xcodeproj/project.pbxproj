@@ -21,6 +21,11 @@
 		90C1D36E2CCC28C30036FA96 /* UserProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 90C1D36A2CCC28C30036FA96 /* UserProfileView.swift */; };
 		90C1D36F2CCC28C30036FA96 /* Config.swift in Sources */ = {isa = PBXBuildFile; fileRef = 90C1D3672CCC28C30036FA96 /* Config.swift */; };
 		90C1D3712CCC2F780036FA96 /* ExerciseModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 90C1D3702CCC2F780036FA96 /* ExerciseModels.swift */; };
+		90DC93672CD027E50065731D /* hold.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 90DC93632CD027E40065731D /* hold.mp3 */; };
+		90DC93682CD027E50065731D /* squeeze.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 90DC93662CD027E40065731D /* squeeze.mp3 */; };
+		90DC93692CD027E50065731D /* relax.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 90DC93652CD027E40065731D /* relax.mp3 */; };
+		90DC936A2CD027E50065731D /* inhale.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 90DC93642CD027E40065731D /* inhale.mp3 */; };
+		90DC936B2CD027E50065731D /* exhale.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 90DC93622CD027E40065731D /* exhale.mp3 */; };
 		90E70A172CBC7A52008D6232 /* meditation3 2.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 90E70A112CBC7A52008D6232 /* meditation3 2.mp3 */; };
 		90E70A192CBC7A52008D6232 /* pop.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 90E70A142CBC7A52008D6232 /* pop.mp3 */; };
 		90E70A1A2CBC7A52008D6232 /* pink-noise-from-the-surface-of-the-river-195101.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 90E70A122CBC7A52008D6232 /* pink-noise-from-the-surface-of-the-river-195101.mp3 */; };
@@ -75,6 +80,11 @@
 		90C1D3692CCC28C30036FA96 /* TutorialContent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TutorialContent.swift; sourceTree = "<group>"; };
 		90C1D36A2CCC28C30036FA96 /* UserProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserProfileView.swift; sourceTree = "<group>"; };
 		90C1D3702CCC2F780036FA96 /* ExerciseModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseModels.swift; sourceTree = "<group>"; };
+		90DC93622CD027E40065731D /* exhale.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = exhale.mp3; sourceTree = "<group>"; };
+		90DC93632CD027E40065731D /* hold.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = hold.mp3; sourceTree = "<group>"; };
+		90DC93642CD027E40065731D /* inhale.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = inhale.mp3; sourceTree = "<group>"; };
+		90DC93652CD027E40065731D /* relax.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = relax.mp3; sourceTree = "<group>"; };
+		90DC93662CD027E40065731D /* squeeze.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = squeeze.mp3; sourceTree = "<group>"; };
 		90E70A0E2CBC7A52008D6232 /* light-rain-outside-a-greenhouse-194012.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = "light-rain-outside-a-greenhouse-194012.mp3"; sourceTree = "<group>"; };
 		90E70A0F2CBC7A52008D6232 /* meditation1 2.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = "meditation1 2.mp3"; sourceTree = "<group>"; };
 		90E70A102CBC7A52008D6232 /* meditation2 2.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = "meditation2 2.mp3"; sourceTree = "<group>"; };
@@ -210,6 +220,11 @@
 				90E70A132CBC7A52008D6232 /* pink-noise-ocean-waves-on-grainy-sand-195103.mp3 */,
 				90E70A142CBC7A52008D6232 /* pop.mp3 */,
 				90E70A152CBC7A52008D6232 /* singing-bowl-deep-sound-27532.mp3 */,
+				90DC93622CD027E40065731D /* exhale.mp3 */,
+				90DC93632CD027E40065731D /* hold.mp3 */,
+				90DC93642CD027E40065731D /* inhale.mp3 */,
+				90DC93652CD027E40065731D /* relax.mp3 */,
+				90DC93662CD027E40065731D /* squeeze.mp3 */,
 			);
 			path = Sound;
 			sourceTree = "<group>";
@@ -327,6 +342,11 @@
 				909696312C992A2F00B4B435 /* Preview Assets.xcassets in Resources */,
 				90E70A172CBC7A52008D6232 /* meditation3 2.mp3 in Resources */,
 				90E70A192CBC7A52008D6232 /* pop.mp3 in Resources */,
+				90DC93672CD027E50065731D /* hold.mp3 in Resources */,
+				90DC93682CD027E50065731D /* squeeze.mp3 in Resources */,
+				90DC93692CD027E50065731D /* relax.mp3 in Resources */,
+				90DC936A2CD027E50065731D /* inhale.mp3 in Resources */,
+				90DC936B2CD027E50065731D /* exhale.mp3 in Resources */,
 				90E70A242CBC7D8F008D6232 /* meditation2 3.mp3 in Resources */,
 				90E70A252CBC7D8F008D6232 /* singing-bowl-deep-sound-27532 3.mp3 in Resources */,
 				90E70A262CBC7D8F008D6232 /* meditation3 3.mp3 in Resources */,

@@ -1,5 +1,6 @@
 import Foundation
 import Combine
+import AVFoundation
 
 enum ExerciseType: String, CaseIterable {
     case kegel = "Kegel Exercise"
@@ -30,9 +31,12 @@ class ExerciseTimer: ObservableObject {
     private var currentPhaseIndex: Int = 0
     private(set) var totalRounds: Int
     
-    init(type: ExerciseType, settings: ExerciseSettings) {
+    @Published var audioHapticManager: AudioHapticManager
+    
+    init(type: ExerciseType, settings: ExerciseSettings, audioHapticManager: AudioHapticManager) {
         print("Initializing ExerciseTimer for \(type) with settings: \(settings)")
         self.exerciseType = type
+        self.audioHapticManager = audioHapticManager
         switch type {
         case .kegel:
             self.phases = ["Contract", "Relax"]
@@ -62,6 +66,26 @@ class ExerciseTimer: ObservableObject {
     
     private func startPhase() {
         print("Starting phase for \(exerciseType) - Phase: \(currentPhase), Round: \(currentRound)")  // Debug print
+        
+        // Play appropriate voice prompt and haptic feedback
+        switch exerciseType {
+        case .kegel:
+            if currentPhase == "Contract" {
+                audioHapticManager.playVoicePrompt("Squeeze")
+                audioHapticManager.playHaptic(.heavy)
+            } else {
+                audioHapticManager.playVoicePrompt("Relax")
+                audioHapticManager.playHaptic(.medium)
+            }
+        case .boxBreathing:
+            audioHapticManager.playVoicePrompt(currentPhase)
+            audioHapticManager.playHaptic(.medium)
+        case .meditation:
+            if currentRound == 1 && currentPhaseIndex == 0 {
+                audioHapticManager.playHaptic(.medium)
+                audioHapticManager.startMeditationMusic()
+            }
+        }
         
         currentPhaseTotalDuration = phaseDurations[currentPhaseIndex]
         internalTimeRemaining = currentPhaseTotalDuration
@@ -132,6 +156,15 @@ class ExerciseTimer: ObservableObject {
 
     private func completeExercise() {
         print("Exercise completed: \(exerciseType)")  // Debug print
+        
+        // Stop meditation music if needed
+        if exerciseType == .meditation {
+            audioHapticManager.stopMeditationMusic()
+        }
+        
+        // Play success haptic
+        audioHapticManager.playHaptic(.success)
+        
         stop()
         DispatchQueue.main.async {
             print("Posting exercise complete notification for: \(self.exerciseType)")  // Debug print

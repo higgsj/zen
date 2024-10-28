@@ -262,6 +262,7 @@ struct SettingsTabView: View {
     @AppStorage("exerciseSettings") private var exerciseSettingsData: Data = Data()
     @State private var settings = ExerciseSettings()
     @EnvironmentObject var supabaseManager: SupabaseManager
+    @EnvironmentObject var audioHapticManager: AudioHapticManager
     @State private var showSignOutAlert = false
     
     var body: some View {
@@ -283,6 +284,34 @@ struct SettingsTabView: View {
                 
                 Section(header: Text("Meditation")) {
                     Stepper("Duration: \(Int(settings.meditationDuration)) minutes", value: $settings.meditationDuration, in: 1...60)
+                }
+                
+                Section(header: Text("Audio & Haptics")) {
+                    Toggle("Meditation Music", isOn: $audioHapticManager.isMeditationMusicEnabled)
+                    
+                    if audioHapticManager.isMeditationMusicEnabled {
+                        Picker("Meditation Track", selection: $audioHapticManager.meditationTrack) {
+                            ForEach(AudioHapticManager.MeditationTrack.allCases, id: \.self) { track in
+                                Text(track.rawValue).tag(track)
+                            }
+                        }
+                        
+                        HStack {
+                            Text("Music Volume")
+                            Slider(value: $audioHapticManager.meditationVolume, in: 0...1)
+                        }
+                    }
+                    
+                    Toggle("Voice Prompts", isOn: $audioHapticManager.isVoicePromptsEnabled)
+                    
+                    if audioHapticManager.isVoicePromptsEnabled {
+                        HStack {
+                            Text("Voice Volume")
+                            Slider(value: $audioHapticManager.voicePromptVolume, in: 0...1)
+                        }
+                    }
+                    
+                    Toggle("Haptic Feedback", isOn: $audioHapticManager.isHapticsEnabled)
                 }
                 
                 Section {
@@ -311,6 +340,24 @@ struct SettingsTabView: View {
                 }
             } message: {
                 Text("Are you sure you want to sign out?")
+            }
+            .onChange(of: audioHapticManager.isMeditationMusicEnabled) { _ in
+                audioHapticManager.saveSettings()
+            }
+            .onChange(of: audioHapticManager.meditationTrack) { _ in
+                audioHapticManager.saveSettings()
+            }
+            .onChange(of: audioHapticManager.meditationVolume) { _ in
+                audioHapticManager.saveSettings()
+            }
+            .onChange(of: audioHapticManager.isVoicePromptsEnabled) { _ in
+                audioHapticManager.saveSettings()
+            }
+            .onChange(of: audioHapticManager.voicePromptVolume) { _ in
+                audioHapticManager.saveSettings()
+            }
+            .onChange(of: audioHapticManager.isHapticsEnabled) { _ in
+                audioHapticManager.saveSettings()
             }
         }
         .onAppear(perform: loadSettings)

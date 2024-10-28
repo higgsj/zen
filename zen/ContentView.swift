@@ -9,12 +9,11 @@ import SwiftUI
 
 struct ContentView: View {
     @EnvironmentObject var supabaseManager: SupabaseManager
-    @State private var isLoading = true
     @State private var error: Error?
     
     var body: some View {
         Group {
-            if isLoading {
+            if supabaseManager.isInitializing {
                 VStack {
                     ProgressView()
                     Text("Loading...")
@@ -23,10 +22,6 @@ struct ContentView: View {
             } else if supabaseManager.currentUser != nil {
                 HomeView()
                     .onAppear { print("Showing HomeView for user: \(supabaseManager.currentUser?.email ?? "Unknown")") }
-            } else if let error = error, !isSecItemNotFoundError(error) {
-                // Only show error view for non-keychain errors
-                Text("Error: \(error.localizedDescription)")
-                    .onAppear { print("Showing error view: \(error.localizedDescription)") }
             } else {
                 AuthView()
                     .onAppear { print("Showing AuthView") }
@@ -38,20 +33,21 @@ struct ContentView: View {
                 do {
                     print("Refreshing session...")
                     try await supabaseManager.refreshSession()
-                    print("Session refreshed successfully")
+                    print("Session refresh completed")
                 } catch {
-                    print("Session refresh result: \(error.localizedDescription)")
+                    print("Session refresh error: \(error.localizedDescription)")
                     self.error = error
                 }
-                isLoading = false
             }
         }
-    }
-    
-    private func isSecItemNotFoundError(_ error: Error) -> Bool {
-        let nsError = error as NSError
-        // Check both the error description and the underlying error code
-        return nsError.localizedDescription.contains("errSecItemNotFound") ||
-               (nsError.domain == "Security" && nsError.code == -25300)
+        .alert("Error", isPresented: .constant(error != nil), actions: {
+            Button("OK") {
+                error = nil
+            }
+        }, message: {
+            if let error = error {
+                Text(error.localizedDescription)
+            }
+        })
     }
 }

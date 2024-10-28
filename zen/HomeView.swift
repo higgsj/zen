@@ -15,10 +15,11 @@ struct HomeView: View {
                 }
                 .tag(0)
             
-            ExercisesTabView()
+            // Pass selectedTab binding to TutorialTabView
+            TutorialTabView(selectedTab: $selectedTab)
                 .tabItem {
-                    Image(systemName: "figure.walk")
-                    Text("Exercises")
+                    Image(systemName: "book.fill")
+                    Text("Tutorial")
                 }
                 .tag(1)
             
@@ -39,6 +40,27 @@ struct HomeView: View {
         .accentColor(.blue)
         .fullScreenCover(isPresented: $isSessionActive) {
             SessionView(isSessionActive: $isSessionActive)
+        }
+    }
+}
+
+// Add new TutorialTabView
+struct TutorialTabView: View {
+    @Environment(\.dismiss) private var dismiss
+    @State private var showTutorial = true
+    @Binding var selectedTab: Int  // Add this binding
+    
+    var body: some View {
+        NavigationView {
+            if !showTutorial {
+                Color.clear.onAppear {
+                    // Switch back to home tab when tutorial is dismissed
+                    selectedTab = 0
+                }
+            } else {
+                TutorialView(screens: TutorialContent.screens, isPresented: $showTutorial)
+                    .navigationTitle("Tutorial")
+            }
         }
     }
 }
@@ -117,13 +139,18 @@ struct HomeTabView: View {
                 .padding(.vertical)
                 
                 // Tutorial Section
-                VStack(spacing: 16) {
+                VStack(alignment: .leading, spacing: 16) {
+                    Text("Tutorial")
+                        .font(.headline)
+                        .padding(.horizontal)
+                    
                     TutorialCardView(
                         title: "Learn More About These Practices",
                         showingTutorial: $showingTutorial
                     )
+                    .padding(.horizontal)
                 }
-                .padding(.horizontal)
+                .padding(.vertical)
                 
                 Spacer(minLength: 50)
             }
@@ -183,8 +210,10 @@ struct WeeklyProgressView: View {
             }
         }
         .padding()
+        .frame(maxWidth: .infinity)  // Make it full width
         .background(Color(.systemBackground))
         .cornerRadius(15)
+        .shadow(radius: 5)  // Add shadow
         .padding(.horizontal)
     }
 }
@@ -197,7 +226,11 @@ struct TutorialCardView: View {
         Button(action: {
             showingTutorial = true
         }) {
-            HStack {
+            HStack(spacing: 12) {
+                Image(systemName: "book.fill")
+                    .font(.system(size: 20))
+                    .foregroundColor(.blue)
+                
                 Text(title)
                     .font(.headline)
                     .foregroundColor(.primary)
@@ -211,56 +244,11 @@ struct TutorialCardView: View {
             .frame(maxWidth: .infinity)
             .background(Color(.systemBackground))
             .cornerRadius(15)
+            .shadow(radius: 5)
         }
         .sheet(isPresented: $showingTutorial) {
-            TutorialView(screens: TutorialContent.screens)
+            TutorialView(screens: TutorialContent.screens, isPresented: $showingTutorial)
         }
-    }
-}
-
-struct ExercisesTabView: View {
-    var body: some View {
-        VStack {
-            Text("Daily Exercises")
-                .font(.largeTitle)
-            
-            ExerciseCard(exercise: .kegel)
-            ExerciseCard(exercise: .boxBreathing)
-            ExerciseCard(exercise: .meditation)
-        }
-    }
-}
-
-struct ExerciseCard: View {
-    let exercise: ExerciseType
-    @StateObject private var timer: ExerciseTimer
-    
-    init(exercise: ExerciseType) {
-        self.exercise = exercise
-        let settings = ExerciseSettings()
-        _timer = StateObject(wrappedValue: ExerciseTimer(type: exercise, settings: settings))
-    }
-    
-    var body: some View {
-        VStack {
-            Text(exercise.rawValue)
-                .font(.headline)
-            
-            Button(action: {
-                if timer.isActive {
-                    timer.stop()
-                } else {
-                    timer.start()
-                }
-            }) {
-                Text(timer.isActive ? "Stop" : "Start")
-            }
-            
-            Text(String(format: "%.1f", timer.timeRemaining))
-        }
-        .padding()
-        .background(Color.gray.opacity(0.2))
-        .cornerRadius(10)
     }
 }
 
@@ -364,11 +352,20 @@ struct SessionView: View {
             Color.black.edgesIgnoringSafeArea(.all)
             
             VStack {
-                Text("AlphaFlow Session")
-                    .font(.largeTitle)
-                    .fontWeight(.bold)
-                    .foregroundColor(.white)
-                    .padding(.top, 50)
+                // Replace generic title with exercise-specific title and benefit
+                VStack(spacing: 8) {
+                    Text(currentExercise.rawValue)
+                        .font(.largeTitle)
+                        .fontWeight(.bold)
+                        .foregroundColor(.white)
+                    
+                    Text(benefitText)
+                        .font(.subheadline)
+                        .foregroundColor(.white.opacity(0.8))
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal, 20)
+                }
+                .padding(.top, 50)
                 
                 Spacer()
                 
@@ -414,6 +411,17 @@ struct SessionView: View {
             if let exerciseType = notification.userInfo?["exerciseType"] as? ExerciseType {
                 handleExerciseCompletion(exerciseType)
             }
+        }
+    }
+    
+    private var benefitText: String {
+        switch currentExercise {
+        case .kegel:
+            return "Building pelvic floor strength for improved sexual performance"
+        case .boxBreathing:
+            return "Optimizing your oxygen-CO2 balance for maximum calm and focus"
+        case .meditation:
+            return "Rewiring your neural pathways for better emotional control"
         }
     }
     
@@ -486,17 +494,51 @@ struct SessionView: View {
     }
 }
 
+// Add this new struct for managing tips
+struct ExerciseTips {
+    static let kegelTips = [
+        "Identify correct muscles by stopping urine flow - but only for practice, not during regular urination",
+        "If you're doing it right, no one should be able to tell you're exercising",
+        "Focus on only tightening pelvic muscles, not abs, thighs, or buttocks",
+        "Keep breathing normally throughout the exercise",
+        "For best results, practice consistently at the same times each day"
+    ]
+    
+    static let boxBreathingTips = [
+        "Keep your shoulders relaxed and spine straight",
+        "Breathe from your diaphragm - place a hand on your belly to check",
+        "If 4 seconds is too long, start with 2-3 seconds and build up",
+        "Practice in a quiet place until it becomes natural",
+        "Use this technique before stressful situations for instant calm"
+    ]
+    
+    static let meditationTips = [
+        "It's normal for your mind to wander - just gently return focus to your breath",
+        "Start with short sessions and gradually increase duration",
+        "Keep your spine straight but not rigid - comfort is key",
+        "Don't try to stop thoughts - observe them without judgment",
+        "Consistency matters more than duration - daily practice is key"
+    ]
+    
+    static func tipsFor(_ exerciseType: ExerciseType) -> [String] {
+        switch exerciseType {
+        case .kegel:
+            return kegelTips
+        case .boxBreathing:
+            return boxBreathingTips
+        case .meditation:
+            return meditationTips
+        }
+    }
+}
+
+// Update ExerciseView to remove exerciseInstructions
 struct ExerciseView: View {
     let exerciseType: ExerciseType
     @ObservedObject var timer: ExerciseTimer
     
     var body: some View {
-        VStack(spacing: 20) {
-            Text(exerciseType.rawValue)
-                .font(.title)
-                .fontWeight(.bold)
-                .foregroundColor(.white)
-            
+        VStack(spacing: 40) { // Increased spacing from 20 to 40
             switch exerciseType {
             case .kegel:
                 KegelExerciseView(timer: timer)
@@ -506,25 +548,41 @@ struct ExerciseView: View {
                 DefaultExerciseView(timer: timer)
             }
             
-            exerciseInstructions
+            RotatingTipView(exerciseType: exerciseType)
         }
     }
+}
+
+// Update RotatingTipView to properly handle the timer
+struct RotatingTipView: View {
+    let exerciseType: ExerciseType
+    @State private var currentTipIndex = 0
+    @State private var tipTimer: AnyCancellable?
     
-    private var exerciseInstructions: some View {
-        VStack {
-            switch exerciseType {
-            case .kegel:
-                Text("Contract and relax your pelvic floor muscles")
-            case .boxBreathing:
-                Text("Inhale, hold, exhale, and hold for equal counts")
-            case .meditation:
-                Text("Focus on your breath and clear your mind")
+    var body: some View {
+        Text(ExerciseTips.tipsFor(exerciseType)[currentTipIndex])
+            .font(.subheadline)
+            .foregroundColor(.white.opacity(0.8))
+            .multilineTextAlignment(.center)
+            .padding(.horizontal, 20)
+            .transition(.opacity)
+            .id(currentTipIndex)
+            .animation(.easeInOut(duration: 0.5), value: currentTipIndex)
+            .onAppear {
+                // Start the timer when view appears
+                tipTimer = Timer.publish(every: 7, on: .main, in: .common)
+                    .autoconnect()
+                    .sink { _ in
+                        withAnimation {
+                            currentTipIndex = (currentTipIndex + 1) % ExerciseTips.tipsFor(exerciseType).count
+                        }
+                    }
             }
-        }
-        .font(.subheadline)
-        .foregroundColor(.white)
-        .multilineTextAlignment(.center)
-        .padding()
+            .onDisappear {
+                // Cancel the timer when view disappears
+                tipTimer?.cancel()
+                tipTimer = nil
+            }
     }
 }
 
@@ -726,75 +784,103 @@ struct AccumulatedBoxProgress: Shape {
 
 struct TutorialView: View {
     @Environment(\.dismiss) private var dismiss
+    @Binding var isPresented: Bool
     let screens: [TutorialScreen]
     @State private var currentScreen = 0
     
+    init(screens: [TutorialScreen], isPresented: Binding<Bool>) {
+        self.screens = screens
+        self._isPresented = isPresented
+    }
+    
     var body: some View {
-        NavigationView {
-            VStack(spacing: 20) {
-                ScrollView {
-                    VStack(alignment: .leading, spacing: 24) {
-                        Text(screens[currentScreen].title)
-                            .font(.title)
-                            .fontWeight(.bold)
-                        
-                        Text(screens[currentScreen].content)
-                            .font(.body)
-                        
-                        VStack(alignment: .leading, spacing: 12) {
-                            ForEach(screens[currentScreen].bulletPoints, id: \.self) { point in
-                                HStack(alignment: .top) {
-                                    Image(systemName: "circle.fill")
-                                        .font(.system(size: 8))
-                                        .padding(.top, 6)
-                                    Text(point)
-                                }
-                            }
-                        }
-                        
-                        if let proTip = screens[currentScreen].proTip {
-                            VStack(alignment: .leading) {
-                                Text("Pro Tip")
-                                    .font(.headline)
-                                Text(proTip)
-                                    .font(.body)
-                            }
-                            .padding()
-                            .background(Color.blue.opacity(0.1))
-                            .cornerRadius(10)
-                        }
-                    }
-                    .padding()
-                }
-                
-                HStack {
-                    if currentScreen > 0 {
-                        Button("Previous") {
-                            withAnimation {
-                                currentScreen -= 1
+        VStack(spacing: 20) {
+            ScrollView {
+                VStack(alignment: .leading, spacing: 24) {
+                    Text(screens[currentScreen].title)
+                        .font(.title)
+                        .fontWeight(.bold)
+                    
+                    Text(screens[currentScreen].content)
+                        .font(.body)
+                    
+                    VStack(alignment: .leading, spacing: 12) {
+                        ForEach(screens[currentScreen].bulletPoints, id: \.self) { point in
+                            HStack(alignment: .top) {
+                                Image(systemName: "circle.fill")
+                                    .font(.system(size: 8))
+                                    .padding(.top, 6)
+                                Text(point)
                             }
                         }
                     }
                     
-                    Spacer()
-                    
-                    if currentScreen < screens.count - 1 {
-                        Button("Next") {
-                            withAnimation {
-                                currentScreen += 1
-                            }
+                    if let proTip = screens[currentScreen].proTip {
+                        VStack(alignment: .leading) {
+                            Text("Pro Tip")
+                                .font(.headline)
+                            Text(proTip)
+                                .font(.body)
                         }
-                    } else {
-                        Button("Done") {
-                            dismiss()
-                        }
+                        .padding()
+                        .background(Color.blue.opacity(0.1))
+                        .cornerRadius(10)
                     }
                 }
                 .padding()
             }
-            .navigationBarItems(trailing: Button("Close") {
-                dismiss()
-            })
+            
+            HStack(spacing: 20) {
+                if currentScreen > 0 {
+                    Button(action: {
+                        withAnimation {
+                            currentScreen -= 1
+                        }
+                    }) {
+                        HStack {
+                            Image(systemName: "chevron.left")
+                            Text("Previous")
+                        }
+                        .foregroundColor(.white)
+                        .padding(.horizontal, 20)
+                        .padding(.vertical, 12)
+                        .background(Color.blue)
+                        .cornerRadius(10)
+                    }
+                }
+                
+                Spacer()
+                
+                if currentScreen < screens.count - 1 {
+                    Button(action: {
+                        withAnimation {
+                            currentScreen += 1
+                        }
+                    }) {
+                        HStack {
+                            Text("Next")
+                            Image(systemName: "chevron.right")
+                        }
+                        .foregroundColor(.white)
+                        .padding(.horizontal, 20)
+                        .padding(.vertical, 12)
+                        .background(Color.blue)
+                        .cornerRadius(10)
+                    }
+                } else {
+                    Button(action: {
+                        isPresented = false
+                    }) {
+                        Text("Done")
+                            .foregroundColor(.white)
+                            .padding(.horizontal, 30)
+                            .padding(.vertical, 12)
+                            .background(Color.green)
+                            .cornerRadius(10)
+                    }
+                }
+            }
+            .padding()
         }
     }
 }

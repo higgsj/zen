@@ -28,6 +28,7 @@ struct zenApp: App {
 class SupabaseManager: ObservableObject {
     let client: SupabaseClient
     @Published var currentUser: User?
+    @Published var isInitializing = true
     
     init() {
         client = SupabaseClient(supabaseURL: Config.supabaseURL, supabaseKey: Config.supabaseKey)
@@ -38,8 +39,17 @@ class SupabaseManager: ObservableObject {
             let session = try await client.auth.session
             await MainActor.run {
                 self.currentUser = session.user
+                self.isInitializing = false
             }
         } catch {
+            // If there's no session, this is not necessarily an error
+            if (error as NSError).localizedDescription.contains("Refresh Token Not Found") {
+                await MainActor.run {
+                    self.currentUser = nil
+                    self.isInitializing = false
+                }
+                return
+            }
             print("Error fetching session: \(error)")
             throw error
         }

@@ -1,11 +1,15 @@
 import Foundation
 
-struct DailyProgress: Codable {
+struct DailyProgress: Codable, Equatable {
     let date: Date
     let completedExercises: Set<ExerciseType>
     
     var completionPercentage: Double {
         Double(completedExercises.count) / Double(ExerciseType.allCases.count)
+    }
+    
+    static func == (lhs: DailyProgress, rhs: DailyProgress) -> Bool {
+        lhs.date == rhs.date && lhs.completedExercises == rhs.completedExercises
     }
 }
 

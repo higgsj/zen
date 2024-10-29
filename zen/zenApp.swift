@@ -11,10 +11,16 @@ import Supabase
 @main
 struct zenApp: App {
     @StateObject private var supabaseManager = SupabaseManager()
+    @StateObject private var notificationManager = NotificationManager.shared
     
     init() {
         // Suppress keyboard layout constraint warnings
         UserDefaults.standard.setValue(false, forKey: "_UIConstraintBasedLayoutLogUnsatisfiable")
+        
+        // Request notification authorization on first launch
+        Task {
+            await NotificationManager.shared.requestPermission()
+        }
     }
 
     var body: some Scene {

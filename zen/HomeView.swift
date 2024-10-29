@@ -68,94 +68,129 @@ struct TutorialTabView: View {
 struct HomeTabView: View {
     @Binding var isSessionActive: Bool
     @State private var showingTutorial = false
+    @State private var isLoading = true
     
     var body: some View {
-        ScrollView {
-            VStack(spacing: 24) {
-                // App Title
-                HStack(spacing: 0) {
-                    Text("ALPHA")
-                        .font(.largeTitle)
-                        .fontWeight(.bold)
-                    Text("flow")
-                        .font(.largeTitle)
-                        .italic()
-                }
-                .padding(.top, 40)
-                
-                // Hero Box with Exercise Types
-                VStack(spacing: 16) {
-                    Text("Daily Practices")
-                        .font(.headline)
-                        .foregroundColor(.gray)
-                    
-                    HStack(spacing: 20) {
-                        ExerciseIconView(
-                            icon: "🌵",  // Using cactus emoji
-                            title: "Kegel",
-                            color: .green,
-                            isSystemIcon: false
-                        )
-                        
-                        ExerciseIconView(
-                            icon: "wind",  // Using wind as placeholder for lungs
-                            title: "Breathing",
-                            color: .blue
-                        )
-                        
-                        ExerciseIconView(
-                            icon: "brain.head.profile",  // Using brain icon
-                            title: "Meditation",
-                            color: .purple
-                        )
+        Group {
+            if isLoading {
+                ProgressView("Loading...")
+                    .onAppear {
+                        // Simulate minimum loading time to avoid flash
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                            isLoading = false
+                        }
                     }
-                    
-                    Button(action: {
-                        isSessionActive = true
-                    }) {
-                        Text("Start Today's Session")
-                            .font(.headline)
-                            .foregroundColor(.white)
-                            .frame(maxWidth: .infinity)
-                            .padding()
-                            .background(Color.blue)
-                            .cornerRadius(15)
+            } else {
+                ScrollView {
+                    LazyVStack(spacing: 24) {
+                        // App Title
+                        HStack(spacing: 0) {
+                            Text("ALPHA")
+                                .font(.largeTitle)
+                                .fontWeight(.bold)
+                            Text("flow")
+                                .font(.largeTitle)
+                                .italic()
+                        }
+                        .padding(.top, 40)
+                        
+                        // Hero Box with Exercise Types
+                        exerciseTypesView
+                        
+                        // Weekly Progress Section
+                        weeklyProgressSection
+                        
+                        // Tutorial Section
+                        tutorialSection
+                        
+                        Spacer(minLength: 50)
                     }
                 }
-                .padding(20)
-                .background(Color(.systemBackground))
-                .cornerRadius(20)
-                .shadow(radius: 5)
-                .padding(.horizontal)
-                
-                // Weekly Progress Section
-                VStack(alignment: .leading, spacing: 16) {
-                    Text("Weekly Progress")
-                        .font(.headline)
-                        .padding(.horizontal)
-                    
-                    WeeklyProgressView()
-                }
-                .padding(.vertical)
-                
-                // Tutorial Section
-                VStack(alignment: .leading, spacing: 16) {
-                    Text("Tutorial")
-                        .font(.headline)
-                        .padding(.horizontal)
-                    
-                    TutorialCardView(
-                        title: "Learn More About These Practices",
-                        showingTutorial: $showingTutorial
-                    )
-                    .padding(.horizontal)
-                }
-                .padding(.vertical)
-                
-                Spacer(minLength: 50)
+                .background(Color(.systemGroupedBackground))
             }
         }
-        .background(Color(.systemGroupedBackground))
+    }
+    
+    // Break down into smaller views for better performance
+    private var exerciseTypesView: some View {
+        VStack(spacing: 16) {
+            Text("Daily Practices")
+                .font(.headline)
+                .foregroundColor(.gray)
+            
+            HStack(spacing: 20) {
+                ForEach(ExerciseType.allCases, id: \.self) { type in
+                    exerciseIcon(for: type)
+                }
+            }
+            
+            startButton
+        }
+        .padding(20)
+        .background(Color(.systemBackground))
+        .cornerRadius(20)
+        .shadow(radius: 5)
+        .padding(.horizontal)
+    }
+    
+    private func exerciseIcon(for type: ExerciseType) -> some View {
+        let iconConfig = iconConfiguration(for: type)
+        return ExerciseIconView(
+            icon: iconConfig.icon,
+            title: iconConfig.title,
+            color: iconConfig.color,
+            isSystemIcon: iconConfig.isSystemIcon
+        )
+    }
+    
+    private var startButton: some View {
+        Button(action: { isSessionActive = true }) {
+            Text("Start Today's Session")
+                .font(.headline)
+                .foregroundColor(.white)
+                .frame(maxWidth: .infinity)
+                .padding()
+                .background(Color.blue)
+                .cornerRadius(15)
+        }
+    }
+    
+    private var weeklyProgressSection: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            Text("Weekly Progress")
+                .font(.headline)
+                .padding(.horizontal)
+            
+            WeeklyProgressView()
+        }
+        .padding(.vertical)
+    }
+    
+    private var tutorialSection: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            Text("Tutorial")
+                .font(.headline)
+                .padding(.horizontal)
+            
+            TutorialCardView(
+                title: "Learn More About These Practices",
+                showingTutorial: $showingTutorial
+            )
+            .padding(.horizontal)
+        }
+        .padding(.vertical)
+    }
+    
+    // Helper function to get icon configuration
+    private func iconConfiguration(for type: ExerciseType) -> (icon: String, title: String, color: Color, isSystemIcon: Bool) {
+        switch type {
+        case .kegel:
+            return ("🌵", "Kegel", .green, false)
+        case .boxBreathing:
+            return ("wind", "Breathing", .blue, true)
+        case .meditation:
+            return ("brain.head.profile", "Meditation", .purple, true)
+        }
     }
 }
 
@@ -195,22 +230,20 @@ struct WeeklyProgressView: View {
     private let calendar = Calendar.current
     let daysOfWeek = ["S", "M", "T", "W", "T", "F", "S"]
     
-    private var weekProgress: [Bool] {
-        // Get the start of the current week
+    // Pre-calculate week dates
+    private var weekDates: [Date] {
         let today = Date()
         guard let weekStart = calendar.date(from: calendar.dateComponents([.yearForWeekOfYear, .weekOfYear], from: today)) else {
-            return Array(repeating: false, count: 7)
+            return []
         }
         
-        // Calculate progress for each day of the week
-        return (0..<7).map { dayOffset in
-            guard let date = calendar.date(byAdding: .day, value: dayOffset, to: weekStart) else {
-                return false
-            }
-            let startOfDay = calendar.startOfDay(for: date)
-            return (progressStore.dailyProgress[startOfDay]?.completionPercentage ?? 0) > 0
+        return (0..<7).compactMap { dayOffset in
+            calendar.date(byAdding: .day, value: dayOffset, to: weekStart)
         }
     }
+    
+    // Cache progress calculations
+    @State private var weekProgress: [Bool] = Array(repeating: false, count: 7)
     
     var body: some View {
         HStack(spacing: 12) {
@@ -232,6 +265,18 @@ struct WeeklyProgressView: View {
         .cornerRadius(15)
         .shadow(radius: 5)
         .padding(.horizontal)
+        .onAppear(perform: calculateProgress)
+        .onReceive(progressStore.objectWillChange) { _ in
+            calculateProgress()
+        }
+    }
+    
+    private func calculateProgress() {
+        let dates = weekDates
+        weekProgress = dates.map { date in
+            let startOfDay = calendar.startOfDay(for: date)
+            return (progressStore.dailyProgress[startOfDay]?.completionPercentage ?? 0) > 0
+        }
     }
 }
 
@@ -284,6 +329,7 @@ struct SettingsTabView: View {
     @EnvironmentObject var supabaseManager: SupabaseManager
     @StateObject private var audioHapticManager = AudioHapticManager()
     @State private var showSignOutAlert = false
+    @StateObject private var notificationManager = NotificationManager.shared
     
     var body: some View {
         NavigationView {
@@ -332,6 +378,26 @@ struct SettingsTabView: View {
                     }
                     
                     Toggle("Haptic Feedback", isOn: $audioHapticManager.isHapticsEnabled)
+                }
+                
+                Section(header: Text("Notifications")) {
+                    Toggle("Daily Reminder", isOn: $notificationManager.isNotificationsEnabled)
+                        .onChange(of: notificationManager.isNotificationsEnabled) { oldValue, newValue in
+                            if newValue {
+                                Task {
+                                    await notificationManager.requestPermission()
+                                }
+                            }
+                        }
+                    
+                    if notificationManager.isNotificationsEnabled {
+                        DatePicker("Reminder Time", 
+                                 selection: $notificationManager.reminderTime,
+                                 displayedComponents: .hourAndMinute)
+                            .onChange(of: notificationManager.reminderTime) { oldValue, newValue in
+                                notificationManager.scheduleNotification()
+                            }
+                    }
                 }
                 
                 Section {

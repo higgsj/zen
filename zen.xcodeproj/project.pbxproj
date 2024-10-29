@@ -33,6 +33,7 @@
 		90DC93842CD079610065731D /* ExerciseSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 90DC93822CD079610065731D /* ExerciseSettings.swift */; };
 		90DC93852CD079610065731D /* SharedModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 90DC93832CD079610065731D /* SharedModels.swift */; };
 		90DC93872CD07A9C0065731D /* ExerciseModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 90DC93862CD07A9C0065731D /* ExerciseModels.swift */; };
+		90DC938A2CD0820F0065731D /* NotificationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 90DC93882CD0820F0065731D /* NotificationManager.swift */; };
 		90E70A172CBC7A52008D6232 /* meditation3 2.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 90E70A112CBC7A52008D6232 /* meditation3 2.mp3 */; };
 		90E70A192CBC7A52008D6232 /* pop.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 90E70A142CBC7A52008D6232 /* pop.mp3 */; };
 		90E70A1A2CBC7A52008D6232 /* pink-noise-from-the-surface-of-the-river-195101.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 90E70A122CBC7A52008D6232 /* pink-noise-from-the-surface-of-the-river-195101.mp3 */; };
@@ -99,6 +100,7 @@
 		90DC93822CD079610065731D /* ExerciseSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseSettings.swift; sourceTree = "<group>"; };
 		90DC93832CD079610065731D /* SharedModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharedModels.swift; sourceTree = "<group>"; };
 		90DC93862CD07A9C0065731D /* ExerciseModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseModels.swift; sourceTree = "<group>"; };
+		90DC93882CD0820F0065731D /* NotificationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationManager.swift; sourceTree = "<group>"; };
 		90E70A0E2CBC7A52008D6232 /* light-rain-outside-a-greenhouse-194012.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = "light-rain-outside-a-greenhouse-194012.mp3"; sourceTree = "<group>"; };
 		90E70A0F2CBC7A52008D6232 /* meditation1 2.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = "meditation1 2.mp3"; sourceTree = "<group>"; };
 		90E70A102CBC7A52008D6232 /* meditation2 2.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = "meditation2 2.mp3"; sourceTree = "<group>"; };
@@ -178,6 +180,7 @@
 		909696282C992A2D00B4B435 /* zen */ = {
 			isa = PBXGroup;
 			children = (
+				90DC93892CD0820F0065731D /* Managers */,
 				90DC93862CD07A9C0065731D /* ExerciseModels.swift */,
 				90DC93752CD076D10065731D /* Models */,
 				90DC93792CD076D10065731D /* Views */,
@@ -254,6 +257,14 @@
 				90DC93772CD076D10065731D /* Progress */,
 			);
 			path = Views;
+			sourceTree = "<group>";
+		};
+		90DC93892CD0820F0065731D /* Managers */ = {
+			isa = PBXGroup;
+			children = (
+				90DC93882CD0820F0065731D /* NotificationManager.swift */,
+			);
+			path = Managers;
 			sourceTree = "<group>";
 		};
 		90F7810D2C9B637600C7148F /* Sound */ = {
@@ -442,6 +453,7 @@
 				9096962C2C992A2D00B4B435 /* ContentView.swift in Sources */,
 				90C1D36B2CCC28C30036FA96 /* AuthView.swift in Sources */,
 				90C1D36C2CCC28C30036FA96 /* TutorialContent.swift in Sources */,
+				90DC938A2CD0820F0065731D /* NotificationManager.swift in Sources */,
 				90C1D36D2CCC28C30036FA96 /* HomeView.swift in Sources */,
 				90DC937A2CD076D10065731D /* DailyProgress.swift in Sources */,
 				90DC93872CD07A9C0065731D /* ExerciseModels.swift in Sources */,

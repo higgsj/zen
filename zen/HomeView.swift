@@ -191,16 +191,33 @@ struct ExerciseIconView: View {
 }
 
 struct WeeklyProgressView: View {
+    @StateObject private var progressStore = ProgressStore.shared
+    private let calendar = Calendar.current
     let daysOfWeek = ["S", "M", "T", "W", "T", "F", "S"]
-    // Mock data - replace with actual progress data
-    let progress: [Bool] = [true, true, false, true, false, false, false]
+    
+    private var weekProgress: [Bool] {
+        // Get the start of the current week
+        let today = Date()
+        guard let weekStart = calendar.date(from: calendar.dateComponents([.yearForWeekOfYear, .weekOfYear], from: today)) else {
+            return Array(repeating: false, count: 7)
+        }
+        
+        // Calculate progress for each day of the week
+        return (0..<7).map { dayOffset in
+            guard let date = calendar.date(byAdding: .day, value: dayOffset, to: weekStart) else {
+                return false
+            }
+            let startOfDay = calendar.startOfDay(for: date)
+            return (progressStore.dailyProgress[startOfDay]?.completionPercentage ?? 0) > 0
+        }
+    }
     
     var body: some View {
         HStack(spacing: 12) {
             ForEach(0..<7) { index in
                 VStack(spacing: 8) {
                     Circle()
-                        .fill(progress[index] ? Color.green : Color.gray.opacity(0.3))
+                        .fill(weekProgress[index] ? Color.green : Color.gray.opacity(0.3))
                         .frame(width: 30, height: 30)
                     
                     Text(daysOfWeek[index])
@@ -210,10 +227,10 @@ struct WeeklyProgressView: View {
             }
         }
         .padding()
-        .frame(maxWidth: .infinity)  // Make it full width
+        .frame(maxWidth: .infinity)
         .background(Color(.systemBackground))
         .cornerRadius(15)
-        .shadow(radius: 5)  // Add shadow
+        .shadow(radius: 5)
         .padding(.horizontal)
     }
 }
@@ -265,7 +282,7 @@ struct SettingsTabView: View {
     @AppStorage("exerciseSettings") private var exerciseSettingsData: Data = Data()
     @State private var settings = ExerciseSettings()
     @EnvironmentObject var supabaseManager: SupabaseManager
-    @EnvironmentObject var audioHapticManager: AudioHapticManager
+    @StateObject private var audioHapticManager = AudioHapticManager()
     @State private var showSignOutAlert = false
     
     var body: some View {
@@ -385,8 +402,8 @@ struct SettingsTabView: View {
 struct SessionView: View {
     @Binding var isSessionActive: Bool
     @State private var currentExercise: ExerciseType = .kegel
+    @StateObject private var audioHapticManager = AudioHapticManager()
     @StateObject private var exerciseTimer: ExerciseTimer
-    @EnvironmentObject var audioHapticManager: AudioHapticManager
     @AppStorage("exerciseSettings") private var exerciseSettingsData: Data = Data()
     @State private var settings = ExerciseSettings()
     @State private var sessionStart: Date?
@@ -394,11 +411,12 @@ struct SessionView: View {
     
     init(isSessionActive: Binding<Bool>) {
         self._isSessionActive = isSessionActive
+        let manager = AudioHapticManager()
         let settings = ExerciseSettings()
         _exerciseTimer = StateObject(wrappedValue: ExerciseTimer(
             type: .kegel,
             settings: settings,
-            audioHapticManager: AudioHapticManager()
+            audioHapticManager: manager
         ))
     }
     
@@ -467,6 +485,9 @@ struct SessionView: View {
                 handleExerciseCompletion(exerciseType)
             }
         }
+        .onReceive(NotificationCenter.default.publisher(for: .sessionComplete)) { _ in
+            isSessionActive = false
+        }
         .onAppear {
             exerciseTimer.audioHapticManager = audioHapticManager
         }
@@ -524,6 +545,10 @@ struct SessionView: View {
         print("Exercise completed: \(completedExercise)")
         exerciseDurations[completedExercise] = exerciseTimer.totalDuration
         
+        // Add this: Record the completed exercise
+        let progressStore = ProgressStore.shared
+        progressStore.recordExercise(completedExercise)
+        
         // Automatically move to next exercise if available
         switch completedExercise {
         case .kegel:
@@ -547,6 +572,14 @@ struct SessionView: View {
             boxBreathingDuration: exerciseDurations[.boxBreathing] ?? 0,
             meditationDuration: exerciseDurations[.meditation] ?? 0
         )
+        
+        // Add this: Record completed exercises
+        let progressStore = ProgressStore.shared
+        for (exerciseType, duration) in exerciseDurations {
+            if duration > 0 {
+                progressStore.recordExercise(exerciseType)
+            }
+        }
         
         print("Session completed: \(session)")
     }

@@ -11,7 +11,6 @@ import Supabase
 @main
 struct zenApp: App {
     @StateObject private var supabaseManager = SupabaseManager()
-    @StateObject private var audioHapticManager = AudioHapticManager()
     
     init() {
         // Suppress keyboard layout constraint warnings
@@ -22,7 +21,6 @@ struct zenApp: App {
         WindowGroup {
             ContentView()
                 .environmentObject(supabaseManager)
-                .environmentObject(audioHapticManager)
         }
     }
 }

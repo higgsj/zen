@@ -33,7 +33,7 @@ class ExerciseTimer: ObservableObject {
         self.audioHapticManager = audioHapticManager
         switch type {
         case .kegel:
-            self.phases = ["Contract", "Relax"]
+            self.phases = ["Squeeze", "Relax"]
             self.phaseDurations = [settings.kegelContractDuration, settings.kegelRelaxDuration]
             self.totalRounds = settings.kegelRounds
         case .boxBreathing:
@@ -64,7 +64,7 @@ class ExerciseTimer: ObservableObject {
         // Play voice prompts at the START of each phase
         switch exerciseType {
         case .kegel:
-            if currentPhase == "Contract" {
+            if currentPhase == "Squeeze" {
                 audioHapticManager.playVoicePrompt("Squeeze")
                 audioHapticManager.playHaptic(.heavy)
             } else if currentPhase == "Relax" {
@@ -115,7 +115,12 @@ class ExerciseTimer: ObservableObject {
         } else {
             phaseProgress = 1.0
             print("Phase complete, moving to next phase")
-            moveToNextPhase()
+            // For meditation, complete exercise directly since there's only one phase
+            if exerciseType == .meditation {
+                completeExercise()
+            } else {
+                moveToNextPhase()
+            }
         }
     }
     
@@ -151,6 +156,11 @@ class ExerciseTimer: ObservableObject {
         // Stop meditation music
         if exerciseType == .meditation {
             audioHapticManager.stopMeditationMusic()
+            
+            // Post notification to end session when meditation completes
+            DispatchQueue.main.async {
+                NotificationCenter.default.post(name: .sessionComplete, object: nil)
+            }
         }
         
         // Play success haptic
@@ -196,7 +206,7 @@ class ExerciseTimer: ObservableObject {
         
         switch type {
         case .kegel:
-            self.phases = ["Contract", "Relax"]
+            self.phases = ["Squeeze", "Relax"]
             self.phaseDurations = [settings.kegelContractDuration, settings.kegelRelaxDuration]
             self.totalRounds = settings.kegelRounds
         case .boxBreathing:
@@ -230,4 +240,5 @@ struct ExerciseSession: Codable {
 
 extension Notification.Name {
     static let exerciseComplete = Notification.Name("exerciseComplete")
+    static let sessionComplete = Notification.Name("sessionComplete")
 } 

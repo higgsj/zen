@@ -10,32 +10,83 @@ struct DailyProgress: Codable {
 }
 
 class ProgressStore: ObservableObject {
+    static let shared = ProgressStore()
     @Published private(set) var dailyProgress: [Date: DailyProgress] = [:]
     private let storeKey = "dailyProgress"
+    private let calendar = Calendar.current
     
     init() {
         loadProgress()
     }
     
     func recordExercise(_ type: ExerciseType) {
-        let today = Calendar.current.startOfDay(for: Date())
-        var todayProgress = dailyProgress[today] ?? DailyProgress(date: today, completedExercises: [])
-        var updatedExercises = todayProgress.completedExercises
+        let today = calendar.startOfDay(for: Date())
+        
+        // Create new progress instance with updated exercises
+        var updatedExercises = dailyProgress[today]?.completedExercises ?? Set<ExerciseType>()
         updatedExercises.insert(type)
-        dailyProgress[today] = DailyProgress(date: today, completedExercises: updatedExercises)
-        saveProgress()
+        
+        // Create new progress instance
+        let newProgress = DailyProgress(date: today, completedExercises: updatedExercises)
+        
+        // Update the progress on the main thread
+        DispatchQueue.main.async {
+            self.dailyProgress[today] = newProgress
+            self.objectWillChange.send()  // Explicitly notify observers of change
+            self.saveProgress()
+        }
+        
+        print("Recording exercise: \(type)")
+        print("Updated progress for today: \(updatedExercises)")
+        print("Completion percentage: \(newProgress.completionPercentage)")
     }
     
     private func loadProgress() {
-        guard let data = UserDefaults.standard.data(forKey: storeKey),
-              let progress = try? JSONDecoder().decode([Date: DailyProgress].self, from: data) else {
+        guard let data = UserDefaults.standard.data(forKey: storeKey) else {
+            print("No progress data found in UserDefaults")
             return
         }
-        dailyProgress = progress
+        
+        do {
+            let decoder = JSONDecoder()
+            let dateFormatter = DateFormatter()
+            dateFormatter.dateFormat = "yyyy-MM-dd"
+            decoder.dateDecodingStrategy = .formatted(dateFormatter)
+            
+            let progress = try decoder.decode([String: DailyProgress].self, from: data)
+            
+            // Convert string dates back to Date objects
+            dailyProgress = progress.reduce(into: [:]) { result, entry in
+                if let date = dateFormatter.date(from: entry.key) {
+                    result[date] = entry.value
+                }
+            }
+            
+            print("Loaded progress data: \(dailyProgress)")
+        } catch {
+            print("Error decoding progress data: \(error)")
+        }
     }
     
     private func saveProgress() {
-        guard let data = try? JSONEncoder().encode(dailyProgress) else { return }
-        UserDefaults.standard.set(data, forKey: storeKey)
+        do {
+            let encoder = JSONEncoder()
+            let dateFormatter = DateFormatter()
+            dateFormatter.dateFormat = "yyyy-MM-dd"
+            encoder.dateEncodingStrategy = .formatted(dateFormatter)
+            
+            // Convert Date keys to string keys for reliable storage
+            let progressDict = dailyProgress.reduce(into: [String: DailyProgress]()) { result, entry in
+                let dateString = dateFormatter.string(from: entry.key)
+                result[dateString] = entry.value
+            }
+            
+            let data = try encoder.encode(progressDict)
+            UserDefaults.standard.set(data, forKey: storeKey)
+            UserDefaults.standard.synchronize()  // Force immediate save
+            print("Progress saved successfully")
+        } catch {
+            print("Error saving progress: \(error)")
+        }
     }
 } 

@@ -1,14 +1,29 @@
 import SwiftUI
 
 struct MonthlyProgressCalendarView: View {
-    @StateObject private var progressStore = ProgressStore()
+    @StateObject private var progressStore = ProgressStore.shared
     @State private var selectedDate = Date()
+    
+    // Add this to force refresh when progress updates
+    @State private var lastUpdate = Date()
     
     private let calendar = Calendar.current
     private let monthFormatter: DateFormatter = {
         let formatter = DateFormatter()
         formatter.dateFormat = "MMMM yyyy"
         return formatter
+    }()
+    
+    // Create a struct for weekday labels with unique IDs
+    private struct WeekdayLabel: Identifiable {
+        let id: Int
+        let label: String
+    }
+    
+    // Create weekday labels with unique IDs
+    private let weekdayLabels: [WeekdayLabel] = {
+        let labels = ["S", "M", "T", "W", "T", "F", "S"]
+        return labels.enumerated().map { WeekdayLabel(id: $0, label: $1) }
     }()
     
     var body: some View {
@@ -33,14 +48,16 @@ struct MonthlyProgressCalendarView: View {
             
             // Calendar Grid
             LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 7), spacing: 8) {
-                ForEach(["S", "M", "T", "W", "T", "F", "S"], id: \.self) { day in
-                    Text(day)
+                // Use WeekdayLabel for unique IDs
+                ForEach(weekdayLabels) { weekday in
+                    Text(weekday.label)
                         .font(.caption)
                         .fontWeight(.bold)
                         .foregroundColor(.gray)
                 }
                 
-                ForEach(daysInMonth(), id: \.self) { date in
+                // Use enumerated for unique IDs for calendar days
+                ForEach(Array(daysInMonth().enumerated()), id: \.offset) { index, date in
                     if let date = date {
                         DayCell(date: date, progress: progressStore.dailyProgress[date]?.completionPercentage ?? 0)
                     } else {
@@ -54,6 +71,10 @@ struct MonthlyProgressCalendarView: View {
             MonthlyStatsView(selectedDate: selectedDate, progressStore: progressStore)
         }
         .padding(.vertical)
+        // Add this to refresh the view when progress changes
+        .onReceive(progressStore.objectWillChange) { _ in
+            lastUpdate = Date()
+        }
     }
     
     private func previousMonth() {
@@ -113,11 +134,11 @@ struct DayCell: View {
         switch progress {
         case 0:
             return Color(.systemGray6)
-        case 0..<0.5:
-            return .blue.opacity(0.3)
-        case 0.5..<1:
-            return .blue.opacity(0.6)
-        default:
+        case 0..<0.34:  // 1 exercise
+            return .blue
+        case 0.34..<0.67:  // 2 exercises
+            return .blue.opacity(0.8)
+        default:  // 3 exercises
             return .blue
         }
     }

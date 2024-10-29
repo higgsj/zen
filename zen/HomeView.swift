@@ -254,7 +254,10 @@ struct TutorialCardView: View {
 
 struct ProgressTabView: View {
     var body: some View {
-        Text("Progress View")
+        NavigationView {
+            MonthlyProgressCalendarView()
+                .navigationTitle("Progress")
+        }
     }
 }
 

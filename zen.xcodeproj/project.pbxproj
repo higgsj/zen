@@ -20,7 +20,6 @@
 		90C1D36D2CCC28C30036FA96 /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 90C1D3682CCC28C30036FA96 /* HomeView.swift */; };
 		90C1D36E2CCC28C30036FA96 /* UserProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 90C1D36A2CCC28C30036FA96 /* UserProfileView.swift */; };
 		90C1D36F2CCC28C30036FA96 /* Config.swift in Sources */ = {isa = PBXBuildFile; fileRef = 90C1D3672CCC28C30036FA96 /* Config.swift */; };
-		90C1D3712CCC2F780036FA96 /* ExerciseModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 90C1D3702CCC2F780036FA96 /* ExerciseModels.swift */; };
 		90DC93672CD027E50065731D /* hold.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 90DC93632CD027E40065731D /* hold.mp3 */; };
 		90DC93682CD027E50065731D /* squeeze.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 90DC93662CD027E40065731D /* squeeze.mp3 */; };
 		90DC93692CD027E50065731D /* relax.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 90DC93652CD027E40065731D /* relax.mp3 */; };
@@ -29,6 +28,9 @@
 		90DC936E2CD0298B0065731D /* meditative-texture-2.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 90DC936D2CD0298B0065731D /* meditative-texture-2.mp3 */; };
 		90DC936F2CD0298B0065731D /* meditative-texture-1.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 90DC936C2CD0298B0065731D /* meditative-texture-1.mp3 */; };
 		90DC93712CD02F7E0065731D /* AudioHapticManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 90DC93702CD02F7E0065731D /* AudioHapticManager.swift */; };
+		90DC937A2CD076D10065731D /* DailyProgress.swift in Sources */ = {isa = PBXBuildFile; fileRef = 90DC93722CD076D10065731D /* DailyProgress.swift */; };
+		90DC937B2CD076D10065731D /* MonthlyProgressView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 90DC93782CD076D10065731D /* MonthlyProgressView.swift */; };
+		90DC937C2CD076D10065731D /* MonthlyProgressCalendarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 90DC93762CD076D10065731D /* MonthlyProgressCalendarView.swift */; };
 		90E70A172CBC7A52008D6232 /* meditation3 2.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 90E70A112CBC7A52008D6232 /* meditation3 2.mp3 */; };
 		90E70A192CBC7A52008D6232 /* pop.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 90E70A142CBC7A52008D6232 /* pop.mp3 */; };
 		90E70A1A2CBC7A52008D6232 /* pink-noise-from-the-surface-of-the-river-195101.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 90E70A122CBC7A52008D6232 /* pink-noise-from-the-surface-of-the-river-195101.mp3 */; };
@@ -82,7 +84,6 @@
 		90C1D3682CCC28C30036FA96 /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
 		90C1D3692CCC28C30036FA96 /* TutorialContent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TutorialContent.swift; sourceTree = "<group>"; };
 		90C1D36A2CCC28C30036FA96 /* UserProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserProfileView.swift; sourceTree = "<group>"; };
-		90C1D3702CCC2F780036FA96 /* ExerciseModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseModels.swift; sourceTree = "<group>"; };
 		90DC93622CD027E40065731D /* exhale.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = exhale.mp3; sourceTree = "<group>"; };
 		90DC93632CD027E40065731D /* hold.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = hold.mp3; sourceTree = "<group>"; };
 		90DC93642CD027E40065731D /* inhale.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = inhale.mp3; sourceTree = "<group>"; };
@@ -91,6 +92,9 @@
 		90DC936C2CD0298B0065731D /* meditative-texture-1.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = "meditative-texture-1.mp3"; sourceTree = "<group>"; };
 		90DC936D2CD0298B0065731D /* meditative-texture-2.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = "meditative-texture-2.mp3"; sourceTree = "<group>"; };
 		90DC93702CD02F7E0065731D /* AudioHapticManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioHapticManager.swift; sourceTree = "<group>"; };
+		90DC93722CD076D10065731D /* DailyProgress.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DailyProgress.swift; sourceTree = "<group>"; };
+		90DC93762CD076D10065731D /* MonthlyProgressCalendarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MonthlyProgressCalendarView.swift; sourceTree = "<group>"; };
+		90DC93782CD076D10065731D /* MonthlyProgressView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MonthlyProgressView.swift; sourceTree = "<group>"; };
 		90E70A0E2CBC7A52008D6232 /* light-rain-outside-a-greenhouse-194012.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = "light-rain-outside-a-greenhouse-194012.mp3"; sourceTree = "<group>"; };
 		90E70A0F2CBC7A52008D6232 /* meditation1 2.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = "meditation1 2.mp3"; sourceTree = "<group>"; };
 		90E70A102CBC7A52008D6232 /* meditation2 2.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = "meditation2 2.mp3"; sourceTree = "<group>"; };
@@ -170,7 +174,8 @@
 		909696282C992A2D00B4B435 /* zen */ = {
 			isa = PBXGroup;
 			children = (
-				90C1D3702CCC2F780036FA96 /* ExerciseModels.swift */,
+				90DC93752CD076D10065731D /* Models */,
+				90DC93792CD076D10065731D /* Views */,
 				90C1D3662CCC28C30036FA96 /* AuthView.swift */,
 				90C1D3672CCC28C30036FA96 /* Config.swift */,
 				90C1D3682CCC28C30036FA96 /* HomeView.swift */,
@@ -210,6 +215,39 @@
 				909696462C992A3000B4B435 /* zenUITestsLaunchTests.swift */,
 			);
 			path = zenUITests;
+			sourceTree = "<group>";
+		};
+		90DC93732CD076D10065731D /* Progress */ = {
+			isa = PBXGroup;
+			children = (
+				90DC93722CD076D10065731D /* DailyProgress.swift */,
+			);
+			path = Progress;
+			sourceTree = "<group>";
+		};
+		90DC93752CD076D10065731D /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				90DC93732CD076D10065731D /* Progress */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		90DC93772CD076D10065731D /* Progress */ = {
+			isa = PBXGroup;
+			children = (
+				90DC93762CD076D10065731D /* MonthlyProgressCalendarView.swift */,
+			);
+			path = Progress;
+			sourceTree = "<group>";
+		};
+		90DC93792CD076D10065731D /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				90DC93772CD076D10065731D /* Progress */,
+				90DC93782CD076D10065731D /* MonthlyProgressView.swift */,
+			);
+			path = Views;
 			sourceTree = "<group>";
 		};
 		90F7810D2C9B637600C7148F /* Sound */ = {
@@ -398,8 +436,10 @@
 				9096962C2C992A2D00B4B435 /* ContentView.swift in Sources */,
 				90C1D36B2CCC28C30036FA96 /* AuthView.swift in Sources */,
 				90C1D36C2CCC28C30036FA96 /* TutorialContent.swift in Sources */,
-				90C1D3712CCC2F780036FA96 /* ExerciseModels.swift in Sources */,
 				90C1D36D2CCC28C30036FA96 /* HomeView.swift in Sources */,
+				90DC937A2CD076D10065731D /* DailyProgress.swift in Sources */,
+				90DC937B2CD076D10065731D /* MonthlyProgressView.swift in Sources */,
+				90DC937C2CD076D10065731D /* MonthlyProgressCalendarView.swift in Sources */,
 				90C1D36E2CCC28C30036FA96 /* UserProfileView.swift in Sources */,
 				90C1D36F2CCC28C30036FA96 /* Config.swift in Sources */,
 				9096962A2C992A2D00B4B435 /* zenApp.swift in Sources */,

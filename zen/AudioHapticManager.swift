@@ -15,7 +15,7 @@ class AudioHapticManager: ObservableObject {
     private var voicePromptPlayer: AVAudioPlayer?
     private var audioSession: AVAudioSession
     
-    enum MeditationTrack: String, CaseIterable {
+    enum MeditationTrack: String, CaseIterable, Codable {
         case none = "None"
         case track1 = "meditative-texture-1"
         case track2 = "meditative-texture-2"
@@ -52,20 +52,47 @@ class AudioHapticManager: ObservableObject {
     // MARK: - Audio Session Setup
     private func setupAudioSession() {
         do {
+            // First deactivate the session
+            try audioSession.setActive(false)
+            
+            // Then set the category and activate
             try audioSession.setCategory(
                 .playback,
                 mode: .default,
-                options: [.mixWithOthers, .allowAirPlay]
+                options: [.mixWithOthers, .allowAirPlay, .duckOthers]
             )
-            try audioSession.setActive(true)
+            try audioSession.setActive(true, options: .notifyOthersOnDeactivation)
         } catch {
-            print("Failed to set up audio session: \(error)")
+            print("Failed to set up audio session: \(error.localizedDescription)")
+            // Print more detailed error information
+            if let nsError = error as NSError? {
+                print("Error domain: \(nsError.domain)")
+                print("Error code: \(nsError.code)")
+                print("User info: \(nsError.userInfo)")
+            }
+        }
+    }
+    
+    // Add a method to ensure audio session is active before playing
+    private func ensureAudioSessionActive() {
+        do {
+            if !audioSession.isOtherAudioPlaying {
+                try audioSession.setActive(true, options: .notifyOthersOnDeactivation)
+            } else {
+                // If other audio is playing, we'll need to handle it appropriately
+                setupAudioSession()
+            }
+        } catch {
+            print("Failed to activate audio session: \(error.localizedDescription)")
         }
     }
     
     // MARK: - Meditation Music Control
     func startMeditationMusic() {
         guard isMeditationMusicEnabled, meditationTrack != .none else { return }
+        
+        // Ensure audio session is active before playing
+        ensureAudioSessionActive()
         
         if let path = Bundle.main.path(forResource: meditationTrack.rawValue, ofType: "mp3") {
             do {
@@ -88,10 +115,27 @@ class AudioHapticManager: ObservableObject {
     func playVoicePrompt(_ prompt: String) {
         guard isVoicePromptsEnabled else { return }
         
-        // Convert prompt to filename format
-        let filename = prompt.lowercased().replacingOccurrences(of: " ", with: "-")
+        // Ensure audio session is active before playing
+        ensureAudioSessionActive()
         
-        if let path = Bundle.main.path(forResource: filename, ofType: "mp3") {
+        // Map the phase names to voice prompt filenames
+        let promptFileName: String
+        switch prompt.lowercased() {
+        case "inhale", "hold inhale":
+            promptFileName = "inhale"
+        case "exhale", "hold exhale":
+            promptFileName = "exhale"
+        case "hold":
+            promptFileName = "hold"
+        case "squeeze":
+            promptFileName = "squeeze"
+        case "relax":
+            promptFileName = "relax"
+        default:
+            promptFileName = prompt.lowercased().replacingOccurrences(of: " ", with: "-")
+        }
+        
+        if let path = Bundle.main.path(forResource: promptFileName, ofType: "mp3") {
             do {
                 voicePromptPlayer = try AVAudioPlayer(contentsOf: URL(fileURLWithPath: path))
                 voicePromptPlayer?.volume = voicePromptVolume
@@ -100,7 +144,7 @@ class AudioHapticManager: ObservableObject {
                 print("Failed to play voice prompt: \(error)")
             }
         } else {
-            print("Voice prompt file not found: \(filename).mp3")
+            print("Voice prompt file not found: \(promptFileName).mp3")
         }
     }
     

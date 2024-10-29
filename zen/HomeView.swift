@@ -341,27 +341,27 @@ struct SettingsTabView: View {
             } message: {
                 Text("Are you sure you want to sign out?")
             }
-            .onChange(of: audioHapticManager.isMeditationMusicEnabled) { _ in
+            .onChange(of: audioHapticManager.isMeditationMusicEnabled) { _, _ in
                 audioHapticManager.saveSettings()
             }
-            .onChange(of: audioHapticManager.meditationTrack) { _ in
+            .onChange(of: audioHapticManager.meditationTrack) { _, _ in
                 audioHapticManager.saveSettings()
             }
-            .onChange(of: audioHapticManager.meditationVolume) { _ in
+            .onChange(of: audioHapticManager.meditationVolume) { _, _ in
                 audioHapticManager.saveSettings()
             }
-            .onChange(of: audioHapticManager.isVoicePromptsEnabled) { _ in
+            .onChange(of: audioHapticManager.isVoicePromptsEnabled) { _, _ in
                 audioHapticManager.saveSettings()
             }
-            .onChange(of: audioHapticManager.voicePromptVolume) { _ in
+            .onChange(of: audioHapticManager.voicePromptVolume) { _, _ in
                 audioHapticManager.saveSettings()
             }
-            .onChange(of: audioHapticManager.isHapticsEnabled) { _ in
+            .onChange(of: audioHapticManager.isHapticsEnabled) { _, _ in
                 audioHapticManager.saveSettings()
             }
         }
         .onAppear(perform: loadSettings)
-        .onChange(of: settings) { _, newValue in
+        .onChange(of: settings) { _, _ in
             saveSettings()
         }
     }
@@ -383,15 +383,20 @@ struct SessionView: View {
     @Binding var isSessionActive: Bool
     @State private var currentExercise: ExerciseType = .kegel
     @StateObject private var exerciseTimer: ExerciseTimer
-    @State private var sessionStart: Date?
-    @State private var exerciseDurations: [ExerciseType: TimeInterval] = [:]
+    @EnvironmentObject var audioHapticManager: AudioHapticManager
     @AppStorage("exerciseSettings") private var exerciseSettingsData: Data = Data()
     @State private var settings = ExerciseSettings()
+    @State private var sessionStart: Date?
+    @State private var exerciseDurations: [ExerciseType: TimeInterval] = [:]
     
     init(isSessionActive: Binding<Bool>) {
         self._isSessionActive = isSessionActive
         let settings = ExerciseSettings()
-        _exerciseTimer = StateObject(wrappedValue: ExerciseTimer(type: .kegel, settings: settings))
+        _exerciseTimer = StateObject(wrappedValue: ExerciseTimer(
+            type: .kegel,
+            settings: settings,
+            audioHapticManager: AudioHapticManager()
+        ))
     }
     
     var body: some View {
@@ -458,6 +463,9 @@ struct SessionView: View {
             if let exerciseType = notification.userInfo?["exerciseType"] as? ExerciseType {
                 handleExerciseCompletion(exerciseType)
             }
+        }
+        .onAppear {
+            exerciseTimer.audioHapticManager = audioHapticManager
         }
     }
     

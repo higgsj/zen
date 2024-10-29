@@ -61,24 +61,40 @@ class ExerciseTimer: ObservableObject {
     
     func start() {
         isActive = true
+        
+        // Play initial voice prompt for kegel exercise
+        if exerciseType == .kegel && currentPhase == "Contract" {
+            audioHapticManager.playVoicePrompt("Squeeze")
+            audioHapticManager.playHaptic(.heavy)
+        }
+        
         startPhase()
     }
     
     private func startPhase() {
-        print("Starting phase for \(exerciseType) - Phase: \(currentPhase), Round: \(currentRound)")  // Debug print
+        print("Starting phase for \(exerciseType) - Phase: \(currentPhase), Round: \(currentRound)")
         
-        // Play appropriate voice prompt and haptic feedback
+        // Play voice prompts at the START of each phase
         switch exerciseType {
         case .kegel:
             if currentPhase == "Contract" {
                 audioHapticManager.playVoicePrompt("Squeeze")
                 audioHapticManager.playHaptic(.heavy)
-            } else {
+            } else if currentPhase == "Relax" {
                 audioHapticManager.playVoicePrompt("Relax")
                 audioHapticManager.playHaptic(.medium)
             }
         case .boxBreathing:
-            audioHapticManager.playVoicePrompt(currentPhase)
+            switch currentPhase {
+            case "Inhale":
+                audioHapticManager.playVoicePrompt("Inhale")
+            case "Hold Inhale", "Hold Exhale":
+                audioHapticManager.playVoicePrompt("Hold")
+            case "Exhale":
+                audioHapticManager.playVoicePrompt("Exhale")
+            default:
+                break
+            }
             audioHapticManager.playHaptic(.medium)
         case .meditation:
             if currentRound == 1 && currentPhaseIndex == 0 {
@@ -91,8 +107,8 @@ class ExerciseTimer: ObservableObject {
         internalTimeRemaining = currentPhaseTotalDuration
         displayTimeRemaining = Int(ceil(internalTimeRemaining))
         phaseProgress = 0.0
-
-        phaseTimer?.cancel()  // Cancel existing timer if any
+        
+        phaseTimer?.cancel()
         phaseTimer = Timer.publish(every: 0.1, on: .main, in: .common)
             .autoconnect()
             .sink { [weak self] _ in
@@ -117,36 +133,35 @@ class ExerciseTimer: ObservableObject {
             }
         } else {
             phaseProgress = 1.0
-            print("Phase complete, moving to next phase")  // Debug print
+            print("Phase complete, moving to next phase")
             moveToNextPhase()
         }
-        
-        currentPhase = phases[currentPhaseIndex]
     }
     
     private func moveToNextPhase() {
         let oldPhaseIndex = currentPhaseIndex
         currentPhaseIndex = (currentPhaseIndex + 1) % phases.count
+        currentPhase = phases[currentPhaseIndex]
         
-        print("Moving from phase \(oldPhaseIndex) to \(currentPhaseIndex)")  // Debug print
-        print("Current exercise: \(exerciseType), Phases count: \(phases.count)")  // Debug print
+        print("Moving from phase \(oldPhaseIndex) to \(currentPhaseIndex)")
+        print("Current exercise: \(exerciseType), Phases count: \(phases.count)")
         
         // If we've completed all phases in the current round
         if currentPhaseIndex == 0 {
-            print("Completed full round for \(exerciseType)")  // Debug print
-            print("Before decrement - Rounds remaining: \(roundsRemaining), Current round: \(currentRound)")  // Debug print
+            print("Completed full round for \(exerciseType)")
+            print("Before decrement - Rounds remaining: \(roundsRemaining), Current round: \(currentRound)")
             
             roundsRemaining -= 1
             
-            print("After decrement - Rounds remaining: \(roundsRemaining), Current round: \(currentRound)")  // Debug print
+            print("After decrement - Rounds remaining: \(roundsRemaining), Current round: \(currentRound)")
             
             if roundsRemaining <= 0 {
-                print("No rounds remaining, completing exercise: \(exerciseType)")  // Debug print
+                print("No rounds remaining, completing exercise: \(exerciseType)")
                 completeExercise()
-                return  // Add explicit return to prevent starting new phase
+                return
             } else {
                 currentRound += 1
-                print("Starting new round \(currentRound) for \(exerciseType)")  // Debug print
+                print("Starting new round \(currentRound) for \(exerciseType)")
                 startPhase()
             }
         } else {
@@ -155,9 +170,9 @@ class ExerciseTimer: ObservableObject {
     }
 
     private func completeExercise() {
-        print("Exercise completed: \(exerciseType)")  // Debug print
+        print("Exercise completed: \(exerciseType)")
         
-        // Stop meditation music if needed
+        // Stop meditation music
         if exerciseType == .meditation {
             audioHapticManager.stopMeditationMusic()
         }
@@ -167,7 +182,7 @@ class ExerciseTimer: ObservableObject {
         
         stop()
         DispatchQueue.main.async {
-            print("Posting exercise complete notification for: \(self.exerciseType)")  // Debug print
+            print("Posting exercise complete notification for: \(self.exerciseType)")
             NotificationCenter.default.post(
                 name: .exerciseComplete,
                 object: nil,
@@ -180,6 +195,11 @@ class ExerciseTimer: ObservableObject {
         isActive = false
         phaseTimer?.cancel()
         phaseTimer = nil
+        
+        // Stop meditation music if it's playing
+        if exerciseType == .meditation {
+            audioHapticManager.stopMeditationMusic()
+        }
     }
     
     func reset() {

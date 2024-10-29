@@ -29,8 +29,10 @@
 		90DC936F2CD0298B0065731D /* meditative-texture-1.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 90DC936C2CD0298B0065731D /* meditative-texture-1.mp3 */; };
 		90DC93712CD02F7E0065731D /* AudioHapticManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 90DC93702CD02F7E0065731D /* AudioHapticManager.swift */; };
 		90DC937A2CD076D10065731D /* DailyProgress.swift in Sources */ = {isa = PBXBuildFile; fileRef = 90DC93722CD076D10065731D /* DailyProgress.swift */; };
-		90DC937B2CD076D10065731D /* MonthlyProgressView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 90DC93782CD076D10065731D /* MonthlyProgressView.swift */; };
 		90DC937C2CD076D10065731D /* MonthlyProgressCalendarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 90DC93762CD076D10065731D /* MonthlyProgressCalendarView.swift */; };
+		90DC93842CD079610065731D /* ExerciseSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 90DC93822CD079610065731D /* ExerciseSettings.swift */; };
+		90DC93852CD079610065731D /* SharedModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 90DC93832CD079610065731D /* SharedModels.swift */; };
+		90DC93872CD07A9C0065731D /* ExerciseModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 90DC93862CD07A9C0065731D /* ExerciseModels.swift */; };
 		90E70A172CBC7A52008D6232 /* meditation3 2.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 90E70A112CBC7A52008D6232 /* meditation3 2.mp3 */; };
 		90E70A192CBC7A52008D6232 /* pop.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 90E70A142CBC7A52008D6232 /* pop.mp3 */; };
 		90E70A1A2CBC7A52008D6232 /* pink-noise-from-the-surface-of-the-river-195101.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 90E70A122CBC7A52008D6232 /* pink-noise-from-the-surface-of-the-river-195101.mp3 */; };
@@ -94,7 +96,9 @@
 		90DC93702CD02F7E0065731D /* AudioHapticManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioHapticManager.swift; sourceTree = "<group>"; };
 		90DC93722CD076D10065731D /* DailyProgress.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DailyProgress.swift; sourceTree = "<group>"; };
 		90DC93762CD076D10065731D /* MonthlyProgressCalendarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MonthlyProgressCalendarView.swift; sourceTree = "<group>"; };
-		90DC93782CD076D10065731D /* MonthlyProgressView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MonthlyProgressView.swift; sourceTree = "<group>"; };
+		90DC93822CD079610065731D /* ExerciseSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseSettings.swift; sourceTree = "<group>"; };
+		90DC93832CD079610065731D /* SharedModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharedModels.swift; sourceTree = "<group>"; };
+		90DC93862CD07A9C0065731D /* ExerciseModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseModels.swift; sourceTree = "<group>"; };
 		90E70A0E2CBC7A52008D6232 /* light-rain-outside-a-greenhouse-194012.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = "light-rain-outside-a-greenhouse-194012.mp3"; sourceTree = "<group>"; };
 		90E70A0F2CBC7A52008D6232 /* meditation1 2.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = "meditation1 2.mp3"; sourceTree = "<group>"; };
 		90E70A102CBC7A52008D6232 /* meditation2 2.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = "meditation2 2.mp3"; sourceTree = "<group>"; };
@@ -174,6 +178,7 @@
 		909696282C992A2D00B4B435 /* zen */ = {
 			isa = PBXGroup;
 			children = (
+				90DC93862CD07A9C0065731D /* ExerciseModels.swift */,
 				90DC93752CD076D10065731D /* Models */,
 				90DC93792CD076D10065731D /* Views */,
 				90C1D3662CCC28C30036FA96 /* AuthView.swift */,
@@ -228,6 +233,8 @@
 		90DC93752CD076D10065731D /* Models */ = {
 			isa = PBXGroup;
 			children = (
+				90DC93822CD079610065731D /* ExerciseSettings.swift */,
+				90DC93832CD079610065731D /* SharedModels.swift */,
 				90DC93732CD076D10065731D /* Progress */,
 			);
 			path = Models;
@@ -245,7 +252,6 @@
 			isa = PBXGroup;
 			children = (
 				90DC93772CD076D10065731D /* Progress */,
-				90DC93782CD076D10065731D /* MonthlyProgressView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -438,7 +444,9 @@
 				90C1D36C2CCC28C30036FA96 /* TutorialContent.swift in Sources */,
 				90C1D36D2CCC28C30036FA96 /* HomeView.swift in Sources */,
 				90DC937A2CD076D10065731D /* DailyProgress.swift in Sources */,
-				90DC937B2CD076D10065731D /* MonthlyProgressView.swift in Sources */,
+				90DC93872CD07A9C0065731D /* ExerciseModels.swift in Sources */,
+				90DC93842CD079610065731D /* ExerciseSettings.swift in Sources */,
+				90DC93852CD079610065731D /* SharedModels.swift in Sources */,
 				90DC937C2CD076D10065731D /* MonthlyProgressCalendarView.swift in Sources */,
 				90C1D36E2CCC28C30036FA96 /* UserProfileView.swift in Sources */,
 				90C1D36F2CCC28C30036FA96 /* Config.swift in Sources */,

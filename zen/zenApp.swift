@@ -12,8 +12,10 @@ import Supabase
 struct zenApp: App {
     @StateObject private var supabaseManager = SupabaseManager()
     @StateObject private var notificationManager = NotificationManager.shared
+    @State private var showSplash = true
     
     init() {
+        print("App initializing")
         // Suppress keyboard layout constraint warnings
         UserDefaults.standard.setValue(false, forKey: "_UIConstraintBasedLayoutLogUnsatisfiable")
         
@@ -25,8 +27,24 @@ struct zenApp: App {
 
     var body: some Scene {
         WindowGroup {
-            ContentView()
-                .environmentObject(supabaseManager)
+            Group {
+                if showSplash {
+                    SplashScreen(isFinished: $showSplash)
+                } else {
+                    if supabaseManager.currentUser != nil {
+                        ContentView()
+                            .environmentObject(supabaseManager)
+                    } else {
+                        AuthView()
+                            .environmentObject(supabaseManager)
+                    }
+                }
+            }
+            .task {
+                print("Starting session refresh")
+                try? await supabaseManager.refreshSession()
+                print("Session refresh completed")
+            }
         }
     }
 }

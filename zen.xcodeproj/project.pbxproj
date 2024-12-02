@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		902EFB5E2CFD4AF300CB15B0 /* SplashScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 902EFB5D2CFD4AF300CB15B0 /* SplashScreen.swift */; };
 		907F54582CBDBD3B00C6CCB3 /* Supabase in Frameworks */ = {isa = PBXBuildFile; productRef = 907F54572CBDBD3B00C6CCB3 /* Supabase */; };
 		9096962A2C992A2D00B4B435 /* zenApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 909696292C992A2D00B4B435 /* zenApp.swift */; };
 		9096962C2C992A2D00B4B435 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9096962B2C992A2D00B4B435 /* ContentView.swift */; };
@@ -72,6 +73,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		902EFB5D2CFD4AF300CB15B0 /* SplashScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SplashScreen.swift; sourceTree = "<group>"; };
 		909696262C992A2D00B4B435 /* zen.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = zen.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		909696292C992A2D00B4B435 /* zenApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = zenApp.swift; sourceTree = "<group>"; };
 		9096962B2C992A2D00B4B435 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -254,6 +256,7 @@
 		90DC93792CD076D10065731D /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				902EFB5D2CFD4AF300CB15B0 /* SplashScreen.swift */,
 				90DC93772CD076D10065731D /* Progress */,
 			);
 			path = Views;
@@ -449,6 +452,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				902EFB5E2CFD4AF300CB15B0 /* SplashScreen.swift in Sources */,
 				90DC93712CD02F7E0065731D /* AudioHapticManager.swift in Sources */,
 				9096962C2C992A2D00B4B435 /* ContentView.swift in Sources */,
 				90C1D36B2CCC28C30036FA96 /* AuthView.swift in Sources */,

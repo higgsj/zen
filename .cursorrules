@@ -1,0 +1,100 @@
+# AlphaFlow iOS App Cursor Rules
+
+# File Organization
+organize_imports = true
+max_file_length = 1000
+preferred_file_extension = "swift"
+
+# Code Style
+indent_style = space
+indent_size = 4
+max_line_length = 120
+trailing_comma = true
+final_newline = true
+
+# Swift Specific
+prefer_let_over_var = true
+force_unwrapping = false
+force_try = false
+force_cast = false
+
+# Documentation
+require_documentation = ["public", "open"]
+documentation_style = "swift-doc"
+
+# Architecture
+required_directories = [
+    "App",
+    "Core",
+    "Features",
+    "Models",
+    "Services",
+    "UI",
+    "Views"
+]
+
+# Testing
+test_file_suffix = "Tests"
+require_tests = true
+test_coverage_threshold = 80
+
+# Asset Management
+asset_naming_convention = "lowercase-hyphen"
+localization_required = true
+
+# Performance
+max_closure_length = 50
+max_function_length = 50
+cyclomatic_complexity_threshold = 10
+
+# SwiftUI Specific
+extract_subviews_threshold = 100
+prefer_view_builders = true
+
+# Privacy and Security
+forbidden_patterns = [
+    "print\\(",
+    "NSLog\\(",
+    "UserDefaults\\.standard",
+    "fatalError\\("
+]
+
+# Accessibility
+require_accessibility_identifiers = true
+require_accessibility_labels = true
+
+# Custom Rules
+file_header_required = true
+file_header_template = """
+//
+//  {filename}
+//  AlphaFlow
+//
+//  Created by {author} on {date}
+//
+"""
+
+# Exercise-Specific Rules
+exercise_view_required_components = [
+    "progress_indicator",
+    "timer_display",
+    "instruction_text",
+    "accessibility_support"
+]
+
+# Wellness App Specific
+required_features = [
+    "exercise_tracking",
+    "progress_monitoring",
+    "settings_persistence",
+    "haptic_feedback",
+    "sound_management"
+]
+
+# Error Handling
+require_error_handling = true
+error_types_required = [
+    "network_errors",
+    "persistence_errors",
+    "validation_errors"
+] 
